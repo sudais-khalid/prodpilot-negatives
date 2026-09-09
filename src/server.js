@@ -6,4 +6,4 @@ const app = express();
 app.use(helmet());
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
-app.listen(3000);
+app.listen(process.env.PORT);
