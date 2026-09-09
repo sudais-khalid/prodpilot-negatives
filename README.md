@@ -1,83 +1,159 @@
-<img src="public/readme/checkered-divider.png" alt="Divider" width="100%" align="center">
-<h1 align="center">
-  <p></p>
-  <a href="https://gabrieledradan.github.io/the-last-pawn/">
-    <img src="public/readme/logo.svg" alt="The Last Pawn Logo" width="500px">
-  </a>
-  <!-- <img src="public/readme/checkered-divider.png" alt="Divider" width="100%" align="center"> -->
-</h1>
-<!-- <img src="public/readme/checkered-divider.png" alt="Divider" width="100%" align="center"> -->
-<!-- <img src="public/readme/top-banner-teeth.png" alt="Bottom Banner" width="100%" align="center"> -->
-<p align="center">A turn-based, chess-inspired strategy game where you play as the last surviving black pawn against the white kingdom's army.</p>
-<p align="center">Rack up the highest score before you're overrun!</p>
-<p align="center">🔗 <a href="https://gabrieledradan.github.io/the-last-pawn/">Play Now on Github Pages!</a></a></p>
+# [h5bp](http://h5bp.github.com) [![Build Status](https://secure.travis-ci.org/h5bp/server-configs-node.svg)](http://travis-ci.org/h5bp/server-configs-node)
 
-<h2><strong>Gameplay</strong></h2>
-<img src="public/readme/gameplay.gif" alt="Gameplay Footage" width="100%" align="center">
+---
 
-<h2><strong>Features</strong></h2>
-<!-- <p align="center"><img src="public/readme/pieces.gif" alt="Gameplay Footage" width="40%" align="center"></p> -->
-<img src="public/readme/pieces.gif" alt="Gameplay Footage" width="40%" align="right">
-<ul>
-  <li>Quick turn-based strategic gameplay with a cute aesthetic!</li>
-  <li>5 types of enemies based on classic chess mechanics (<i>pawns promote too!</i>)</li>
-  <li>Three difficulty settings for three different experiences</li>
-  <li>Responsive design, with keys and swipe controls</li>
-</ul>
-<br>
-<p align="right">
-</p>
+**:warning: This module is depecrated (Express 3.x) and is being [rewritten](https://github.com/h5bp/server-configs-node/issues/57).**
 
-<h2><strong>Controls</strong></h2>
-<ul>
-  <p align="center"><img src="public/readme/control-scheme.png" alt="Controls Image" width="250px" align="center"></p>
-  <li>On Desktop, use <code>WASD</code> to move in the grid and the <code>spacebar</code> to pass a turn.</li>
-  <li>On Mobile, <code>swipe</code> in a direction to move, and <code>tap</code> to pass.</li>
-  <li>When the bar on the top of the screen is full, you can capture an enemy piece by moving into its tile.</li>
-  <li>In the Options page, you can change the <code>Difficulty</code> and toggle <code>Show Indicators</code> to show danger tiles.</li>
-</ul>
+---
 
-<h2><strong>Built With</strong></h2>
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="public/readme/react.svg" width="80" />
-      <br />
-      React
-    </td>
-    <td align="center">
-      <img src="public/readme/redux.svg" width="80" />
-      <br />
-      Redux
-    </td>
-    <td align="center">
-      <img src="public/readme/sass.png" width="80" />
-      <br />
-      SCSS
-    </td>
-    <td align="center">
-      <img src="public/readme/vite.svg" width="80" />
-      <br />
-      Vite
-    </td>
-  </tr>
-</table>
+**HTML5 boilerplate** (H5BP) server config for node.js.
 
-<h2><strong>License</strong></h2>
-<p>This project is licensed under the <a href="LICENSE">MIT License</a>.</p>
+`h5bp` for node.js follows the guidelines of the [Apache] version:
+ - secures backup and hidden files.
+ - optionally redirects `www.yoursite.tld` to `yoursite.tld` or vice versa.
+ - offers a simple cache busting mechanism.
+ - normalize content types.
+ - optionally enables CORS.
+ - sets correct cache expires depending of the type of resource.
+ - and some others...
 
-<h2><strong>Attribution</strong></h2>
-<p>The following logos are used in this project:</p>
-<ul>
-  <li><strong>React, Redux, and Vite</strong> logos are used under the MIT license.</li>
-  <li><strong>Sass logo</strong> is used under the Creative Commons Attribution-ShareAlike 4.0 License.</li>
-</ul>
-<p>All trademarks, logos, and brand names are the property of their respective owners.</p>
+It also focuses on offering additional features such as on-the-fly script concatenation using **CommonJS** or **AMD**.
 
-<h2><strong>Contact</strong></h2>
-<p>Let's get in touch: <a href="mailto:gabriel.edradan05@gmail.com">gabriel.edradan05@gmail.com</a>.
+[Apache]: https://github.com/h5bp/server-configs-apache
 
-<br>
-<br>
-<br>
-<img src="public/readme/checkered-divider.png" alt="Divider" width="100%" align="center">
+## Installation
+
+```bash
+npm install --save h5bp
+```
+
+## Quick Start
+
+### Create a simple http server
+
+```javascript
+var h5bp = require('h5bp');
+
+var app = h5bp.createServer({ root: __dirname + '/public' });
+app.listen(3000);
+```
+
+`app` is an instance of an `express` application. You can add additional middlewares or routes if you like.
+
+### Use it as a connect / express middleware
+
+```javascript
+var express = require('express'),
+    h5bp = require('h5bp');
+
+var app = express();
+app.use(h5bp({ root: __dirname + '/public' }));
+
+// in order to serve files, you should add the two following middlewares
+app.use(express.compress());
+app.use(express.static(__dirname + '/public'));
+app.listen(3000);
+```
+
+### Concatenate scripts on-the-fly
+
+If you want to split your application source files but only serve one file, you can use the on-the-fly concatenation.
+If you are familiar with node.js, you can use the **CommonJS** style. You can also use the **AMD** style.
+
+```javascript
+app.use(h5bp({
+    root: __dirname + '/public',
+    scripts: {
+        files: ['app.js'],
+        processor: 'commonjs'   // can also be "amd"
+    }
+}));
+```
+
+At the first request hit to `/app.js`, the server will compile, cache and serve the file. Any subsequent request will
+serve the cached file without any performance impact.
+
+So, this feature is meant to be used with the [cache busting mechanism] in order to ensure the client always has the
+latest resource version. If you restart your server, the cache will be flushed.
+
+Note that the next release will provide a *development mode* where the server will simply disable its cache and
+always serve the latest version of the file.
+
+[cache busting mechanism]: https://github.com/h5bp/server-configs/tree/master/apache#cache-busting
+
+## Options
+
+There are several options you can pass to the middleware.
+
+`app.use(h5bp(options));`
+
+### root
+
+Tells the filesystem path to the root directory of static resources. This options is mandatory if you serve static files.
+
+### www
+
+Forces **www** if `true`, forces **non-www** if `false`, does nothing if not defined. By default, this is disabled.
+
+### cors
+
+Enables **CORS** for everything. By default this is disabled.
+
+### dotfiles
+
+Enables access to dotfiles. By default this is disabled.
+
+### scripts
+
+Tells which scripts to concatenate.
+
+This is an object with the following properties:
+
+#### files
+
+This is an array of files to concatenate. Their path is relative to the `root` option. Their URL will be absolute.
+
+For example, if you set **files** to `['scripts/app.js']` and **root** to `/home/h5bp/app/`:
+ - The path will be: `/home/h5bp/app/scripts/app.js`.
+ - The served URL will be: `yoursite.tld/scripts/app.js`.
+
+#### processor
+
+Tells which processor to use for scripts concatenation.
+
+For now, it can be one of the following values:
+ - `commonjs`: will concatenate files using the **CommonJS** method (`require/exports`).
+ - `amd`: will concatenate files using the **AMD** method (`require/define`).
+
+## Additional options
+
+The `h5bp.createServer` function takes the same options, plus additional ones.
+
+The `callback` is optional. It is a custom middleware that you can register directly if you want to.
+
+`h5bp.createServer(options, [callback]);`
+
+### server
+
+Tells which type of server you want to use.
+
+It can be one of the following values:
+ - `express`: uses **express**, this is the default value.
+ - `connect`: uses **connect**.
+
+### logger
+
+Tells if you want to log server requests or not. This can also be an object containing [logger options].
+
+[logger options]: http://www.senchalabs.org/connect/middleware-logger.html
+
+### compress
+
+Tells if you want to serve `gzipped` content or not. By default this is `true`.
+
+If you are using `h5bp` as a middleware, we strongly encourage you to use the `compress` middleware provided by
+**express** / **connect**.
+
+## License
+
+[MIT License](LICENSE.md)

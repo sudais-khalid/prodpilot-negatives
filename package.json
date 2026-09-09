@@ -1,37 +1,64 @@
 {
-  "name": "pawn-s-gambit",
-  "homepage": "https://gabrieledradan.github.io/the-last-pawn/",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "h5bp",
+  "description": "HTML5 boilerplate (H5BP) inspired server config for node.js",
+  "version": "0.1.4",
+  "license": "MIT",
+  "author": [
+    "Nicolas Gryman <ngryman@gmail.com>",
+    "Sean Caetano Martin <seancaetanomartin@gmail.com>"
+  ],
+  "contributors": [
+    "Nick Baugh <niftylettuce@gmail.com>",
+    "Benjamin Tan <demoneaux@gmail.com>"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "mocha": "mocha test --reporter dot --globals requirejsVars --bail",
+    "lint": "jshint .",
+    "test": "npm run lint && npm run mocha"
+  },
+  "keywords": [
+    "html5",
+    "boilerplate",
+    "express",
+    "connect",
+    "server",
+    "config",
+    "goodness"
+  ],
+  "homepage": "https://github.com/h5bp/server-configs-node",
+  "repository": "h5bp/server-configs-node",
+  "bugs": {
+    "url": "https://github.com/h5bp/server-configs-node/issues"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "main": "lib/h5bp",
+  "files": [
+    "lib",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "peerDependencies": {
+    "express": "3.x"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^2.5.1",
-    "gh-pages": "^6.3.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-redux": "^9.2.0",
-    "react-swipeable": "^7.0.2",
-    "sass": "^1.84.0",
-    "scss": "^0.2.4"
+    "async": "^1.1.0",
+    "clean-css": "^3.3.0",
+    "compression": "^1.4.4",
+    "express": "^4.12.4",
+    "less": "^2.5.1",
+    "node-sass": "^3.1.2",
+    "requirejs": "^2.1.18",
+    "stylus": "^0.51.1",
+    "uglify-js": "^2.4.23",
+    "webmake": "^0.3.39"
   },
   "devDependencies": {
-    "@eslint/js": "^9.19.0",
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.19.0",
-    "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.18",
-    "globals": "^15.14.0",
-    "vite": "^6.1.0"
+    "chai": "^2.3.0",
+    "connect": "^3.3.5",
+    "jshint": "^2.8.0",
+    "mocha": "^2.2.5",
+    "supertest": "^1.0.1"
   }
 }
