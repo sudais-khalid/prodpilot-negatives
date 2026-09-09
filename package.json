@@ -1,39 +1,84 @@
 {
-  "name": "react-three-vite",
-  "version": "2.0.0",
-  "description": "A simple React Three Fiber + Vite starter.",
+  "name": "primusread",
+  "private": true,
+  "version": "0.18.1",
   "keywords": [
-    "r3f",
+    "primusread",
+    "speed-reading",
+    "fixation-reading",
+    "epub",
+    "epub-reader",
+    "pdf",
+    "reading",
     "react",
-    "three",
     "vite",
-    "starter",
-    "react three fiber",
-    "sandbox"
+    "tailwind",
+    "typescript",
+    "dark-mode",
+    "open-source"
   ],
-  "author": "Benjamin Miles <talk@benjaminmiles.com> (https://github.com/benjaminmiles)",
-  "repository": "github:benjaminmiles/react-three-vite",
-  "license": "MIT",
-  "dependencies": {
-    "@react-three/drei": "10.7.6",
-    "@react-three/fiber": "9.3.0",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "three": "0.180.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^5.0.3",
-    "vite": "^7.1.6"
+  "engines": {
+    "node": "22.x"
   },
   "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "stylelint": "npx stylelint \"./**/*.css\" --config \"./stylelint.config.cjs\"",
+    "stylelint:fix": "npm run stylelint -- --fix",
+    "prettier:fix": "prettier --config ./prettier.config.js --write ./src/**/*.{css,ts,tsx} ",
+    "prettier:check": "prettier --config ./prettier.config.js --check ./src/**/*.{css,ts,tsx}",
+    "lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --quiet",
+    "lint:fix": "npm run lint -- --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest --run",
+    "test:ui": "vitest --ui",
+    "bench": "vitest bench"
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  "dependencies": {
+    "html-to-image": "^1.11.13",
+    "jspdf": "^4.2.1",
+    "jszip": "^3.10.1",
+    "mammoth": "^1.12.0",
+    "pdfjs-dist": "^5.7.284",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/jszip": "^3.4.0",
+    "@types/node": "^22.15.18",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "@vitest/eslint-plugin": "^1.0.0",
+    "@vitest/ui": "^4.1.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "globals": "^16.0.0",
+    "jsdom": "^29.0.0",
+    "postcss": "^8.5.0",
+    "postcss-extend": "^1.0.5",
+    "postcss-flexbugs-fixes": "^5.0.2",
+    "postcss-import": "^16.1.1",
+    "postcss-mixins": "^12.1.2",
+    "postcss-preset-env": "^11.2.1",
+    "postcss-reporter": "^7.1.0",
+    "prettier": "^3.0.0",
+    "stylelint": "^17.0.0",
+    "stylelint-config-css-modules": "^4.6.0",
+    "stylelint-config-recess-order": "^7.0.0",
+    "stylelint-config-recommended": "^18.0.0",
+    "stylelint-config-standard": "^40.0.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.0",
+    "typescript-eslint": "^8.59.3",
+    "vite": "^8.0.0",
+    "vitest": "^4.1.0"
+  }
 }

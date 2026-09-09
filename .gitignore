@@ -1,41 +1,32 @@
-# dependencies
-/node_modules
-package-lock.json
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-/dist
-
-# misc
-.DS_Store
-*.pem
-/.cert/
-
-# debug
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# local env files
-.env*
-.env.local
-!.env.sample
+node_modules
+dist
+dist-ssr
+*.local
 
-# vercel
-.vercel
+# Local docs / design specs
+docs/
 
-# next-pwa
-/public/workbox-*.js
-/public/sw.js
+# Local tooling
+.claude/
+.superpowers/
+*.code-workspace
 
-report.*.json
-
-# .vscode Debugging
-.vscode/*-debug-profile
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
