@@ -1,134 +1,118 @@
-There is an example [use-webpack](https://github.com/YDJ-FE/ts-react-vite_or_webpack/tree/use-webpack)
+Monorepo starter using Vite and Turborepo to create microfrontend React apps, libraries, docs, testing, tooling, and more.
 
-This is a simple (admin) starter with typescript, react and vite.
+# Requirements
 
-Have a quick view:
+Install [pnpm](https://pnpm.io/).
 
-<img src="./screenshot.png" width="900">
+We recommend an LTS version of [Node.js](https://nodejs.org/en/) >= 16.
 
-## setup
+# Local Development
 
-> for husky
+To work on MyOrg web apps, from the root,
 
-```bash
-$ npm run prepare
-```
+1. Run `pnpm install`
 
-> If you do not need the taobao registry, you can change it in `.npmrc`
+2. Run `pnpm dev`
 
-```bash
-$ npm i
-```
+# Environment
 
-## test
+Please see `apps/core/.env` for a list of environment variables you can set.
 
-```bash
-$ npm test
-```
+# Testing
 
-## build for development
+To run tests for all packages with Vitest, from the root, run `pnpm test`.
 
-```bash
-$ npm run dev
-```
+To run end-to-end tests for all apps with Cypress, from the root, run `pnpm e2e`.
 
-## build for production
+When writing tests, we have helpers available in both environments using [@testing-library](https://testing-library.com/docs/queries/about).
 
-```bash
-$ npm run build:(qa/prod)
-```
+# Production
 
-## characteristics
+To deploy the `@myorg/core` app, from the root,
 
--   use [ant design](https://ant.design/index-cn) as UI framework
--   use ServiceWorker
--   use husky{pre-commit/commit-msg} hooks
--   use [react-intl-universal](https://github.com/alibaba/react-intl-universal) for i18n.
--   use [react-virtualized](https://github.com/bvaughn/react-virtualized) for fat list.
+1. Run `pnpm build`
 
-## pages
+2. Run `pnpm --filter "@myorg/core" run preview` to preview the app.
 
--   The Index page became a [Socket Debugger](https://starter.jackple.com/#/)
+In production, please see [`myorg/server`](https://github.myorg.com/myorg/myorg-server).
 
-## TODO
+# Tooling
 
--   config menu by user with permission
--   more functional pages like Socket Debugger
+We use the following tools:
 
-## component example
+- [Vite](https://vitejs.dev/)
+- [Turbo](https://turbo.build/repo)
+- [React](https://reactjs.org/)
+- [ESLint](https://eslint.org/)
+- [Prettier](https://prettier.io/)
+- [Storybook](https://storybook.js.org/)
+- [Plop](https://github.com/plopjs/plop)
+- [Husky](https://github.com/typicode/husky)
+- [Vitest](https://github.com/vitest-dev/vitest)
+- [Cypress](https://www.cypress.io/)
+- [Sentry](https://github.com/getsentry/sentry)
+- [Changesets](https://github.com/changesets/changesets)
 
-```jsx
-import React from 'react'
-import { observer } from 'mobx-react'
-import { Button } from 'antd'
+# Guide
 
-import history from '@shared/App/ht'
+## How do I create a new app or package?
 
-function Test() {
-    function gotoHome() {
-        history.push('/')
-    }
-    return (
-        <Button type="primary" onClick={gotoHome}>
-            go to page index directly
-        </Button>
-    )
-}
+To create a new app, run `pnpm new-app` or `pnpm new-app-ts` (TypeScript).
 
-export default observer(Test)
-```
+To add a library, run `pnpm new-library` or `pnpm new-library-ts` (TypeScript).
 
-[live example](https://github.com/YDJ-FE/ts-react-webpack4/blob/master/src/containers/views/Login/index.tsx?1532570619900)
+## How should I create a branch for my new code?
 
-## necessary extensions (on vscode)
+The `main` branch is the production code.
 
--   [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+Each package has a branch called `next-<package>`, e.g. `next-shared`. This is an eternal branch with the new code for `<package>`.
 
--   [stylelint](https://marketplace.visualstudio.com/items?itemName=stylelint.vscode-stylelint)
+To create an update, branch `feature/*` from `next-<package>` and merge back into `next-<package>` to commit your work.
 
--   [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+UAT branches are available, and should be named `uat-<package>` to provide a deployment in the staging environment.
 
-## how to upload file to server
+## How do I preview my new code?
 
-```bash
-#!/bin/bash
+Every time a commit is pushed up, it will have a new review app deployed.
 
-TIMESPAN=$(date '+%s')
-DEPLOYNAME=ts-react.qa.${TIMESPAN}
-DEPLOYFILES=${DEPLOYNAME}.tar.gz
-SERVER=0.0.0.0
+If it is a `uat-<package>` branch, it will be available at `https://review.myorg.com/uat-<package>`.
 
-# make compression
-cd dist/qa
-tar -zcvf ${DEPLOYFILES} ./*
+All other commits will be available to preview at `https://review.myorg.com/<commit-short-sha>`, where `<commit-short-sha>` is the first 8 characters of the commit hash.
 
-# upload
-scp -P 22 -o StrictHostKeyChecking=no ${DEPLOYFILES} node@${SERVER}:/home/pages/ts-react/tarfiles
+## How do I add a dependency to my project?
 
-# make decompression
-ssh -p 22 -o StrictHostKeyChecking=no node@${SERVER} tar xzf /home/pages/ts-react/tarfiles/${DEPLOYFILES} -C /home/pages/ts-react
+To add a dependency to a specific workspace, run `pnpm --filter "workspace" add <package-to-add>`, e.g. `pnpm --filter "@myorg/data" add d3`.
 
-if [ $? -ne 0 ]; then
-    echo "success"
-else
-    echo "fail"
-fi
-```
+> **Note: Do not add dependencies to the root workspace.**
 
-## how to deploy with nginx
+## What libraries should I know about?
 
-```nginx
-server {
-       listen       9993;
-       server_name  localhost:9993;
+Please see our [Storybook](https://storybook.myorg.com) to see the docs and learn about what packages you can use. You can run Storybook locally while you work on your projects with `pnpm run docs`.
 
-       location / {
-             root   ~/Documents/react/ts-react/dist/qa/;
-             index  index.html;
-       }
- }
-```
+`@myorg/core`: Our main MyOrg web app
 
-## the scaffold
+`@myorg/shell`: Our core UI and design library that extends and configures Material UI
 
-[steamer-react-redux-ts](https://github.com/YDJ-FE/steamer-react-redux-ts)
+`@myorg/shared`: Shared code between all MyOrg packages
+
+`@myorg/<app>-ui`: Packages with this name format are UI libraries built for specific apps but can still be used by other apps, e.g. `@myorg/dashboard-ui` was built for the Dashboard portal but may provide useful UI for your project
+
+## How do I version, tag, release, or publish a new version of a package?
+
+We handle this with the `changesets` CLI tool.
+
+A developer creates a changeset, which is just a changelog for the package being updated. Then they'll version it, and if required, release it to a registry.
+
+1. Ensure you are on a `next-<package>` branch. Merge `main` in
+2. Run `pnpm changeset-create` to write your changelog (use spacebar to pick packages)
+3. Run `pnpm changeset-save-prerelease <tag-suffix>` **only** if you want to create a specific prerelease version. For example, `pnpm changeset-save-prerelease rc` creates `@myorg/package@1.7.3-rc.0`
+4. To create the new version, run `pnpm changeset-save`
+5. To publish the new version to the registry, run `pnpm changeset-tag-and-publish`
+6. To instead **only tag** the new versions, but not publish, run `pnpm changeset-tag`
+7. Run `git push --follow-tags`
+
+## How do I fix CORS errors in development for a URL I am using in my project?
+
+If you are facing CORS errors in development, you may want to update your API's CORS rules in that environment. If that is not an option and your package is built with Vite (e.g. `@myorg/core`), please update the development server proxy rules:
+
+In `apps/core/vite.config.ts`, configure your local API URL and the target API URL in the `server.proxy` object.
