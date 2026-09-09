@@ -23,7 +23,6 @@ pnpm-debug.log*
 *.swo
 
 # Env
-.env
 .env.*
 !.env.example
 
