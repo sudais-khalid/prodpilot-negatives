@@ -9,7 +9,7 @@ lerna-debug.log*
 package-lock.json
 yarn.lock
 
-dist
+node_modules
 dist-ssr
 *.local
 .eslintcache
