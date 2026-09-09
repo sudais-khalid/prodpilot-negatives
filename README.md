@@ -1,506 +1,165 @@
-## [WeiXin]
+# Universal Redux
 
-(minimalist) WeChat Middleware for Express.js
+[![npm version](https://badge.fury.io/js/universal-redux.svg)](https://badge.fury.io/js/universal-redux)
+[![build status](https://img.shields.io/travis/bdefore/universal-redux/master.svg?style=flat-square)](https://travis-ci.org/bdefore/universal-redux)
+[![Dependency Status](https://david-dm.org/bdefore/universal-redux.svg?style=flat-square)](https://david-dm.org/bdefore/universal-redux)
+[![devDependency Status](https://david-dm.org/bdefore/universal-redux/dev-status.svg?style=flat-square)](https://david-dm.org/bdefore/universal-redux#info=devDependencies)
+[![Demo on Heroku](https://img.shields.io/badge/demo-heroku-brightgreen.svg?style=flat-square)](https://universal-redux.herokuapp.com)
+[![Discord](https://img.shields.io/badge/Discord-join%20chat%20%E2%86%92-738bd7.svg?style=flat-square)](https://discord.gg/0ZcbPKXt5bXmzEb4)
 
-## 微信应用框架
+### Deprecation Notice
 
-`wx`是极简设计的微信（公共平台）应用参考级框架，而并非微信接口在`node.js`下的幂等映射。
+This tool had a nice good run of things, but it's no longer recommended for greenfield projects. Consider [Create React App](https://github.com/facebook/create-react-app) to be a currently maintained spiritual successor.
 
+### What and Why
 
-[WeiXin]: http://weixinjs.org/
+Universal Redux is an npm package that when used as a dependency in your project provides a universal (isomorphic) rendering server. You can either use its defaults and begin coding your project, or configure it to your liking with custom Webpack options and Express or Redux middleware. It's intended as both an easy starting point for developers new to React and Redux, as well as an extensible base by which advanced developers can augment with their own middleware and keep up to date with the fast-moving React ecosystem.
 
+### Getting Started
 
-## 安装
-`wx`要求在线的**[Redis]**实例。默认情况下，`wx`尝试连接本地实例，您可以指定`Redis`连接。利用`Redis`，`wx`具备：
+The quickest way to get started is to clone the [starter project](https://github.com/bdefore/universal-redux-starter). This gives you a base project that is set up with default configurations of Webpack and Express.
 
-+ 集群模式下自动管理微信令牌；
-+ 浏览器端捕捉二维码扫描；
-+ 等功能。
+#### Other Examples
 
-[Redis]:http://redis.io
+- [An example with JWT authentication](https://github.com/bdefore/universal-redux-jwt) ([Heroku demo](https://universal-redux-jwt-example.herokuapp.com))
+- [A refactor of react-redux-universal-hot-example with universal-redux and react-router-redux](https://github.com/bdefore/react-redux-universal-hot-example/tree/babel6) ([Heroku demo](https://universal-redux.herokuapp.com))
+- [An example using Koa instead of Express](https://github.com/bartolkaruza/universal-redux-koa)
 
-===
-1. ```npm install wx```
+### Usage
 
-2. ☞ 登录**[微信公众平台]**    
-   ☞ 高级功能    
-   ☞ 开发模式，获取token
-   
-   [微信公众平台]: https://mp.weixin.qq.com 
-   
-    *配置服务器时仅token必须。  
-      
-3. 服务器端
+Your project must define a set of routes as specified by a [React Router](https://github.com/rackt/react-router) configuration, but other than that, your folder structure and development path is up to you. Depending on your other dependencies, you may want to use a version of Universal Redux that is not the latest, using the [section below](https://github.com/bdefore/universal-redux#what-version-to-use) to decide.
 
-  ```coffeescript
-   app = express()    
-   wx  = new require 'wx'
-     token            : 'xxx-xx-xx'
-     app_id           : 'xx-xxx'
-     app_secret       : 'xxxxxxxxxxxx'
-     encoding_aes_key : 'xxxxxx'
-   app.use '/wx', wx
-   ```
-4.  启动应用程序后，修改微信开发模式中服务器配置为：`http://server.address/wx`，且有与程序相一致的`token`。
+#### Requirements
 
-## 接受文本消息
+Node.JS >= 4.1.1
+npm >= 3.3.12 (install via `npm install -g npm@3` if you are on Node 4)
 
-通过`wx.text`注册文本消息处理流程：  
- 
-   +  `req.content`为用户所发文本；  
-   +  `req.user`包含**[用户基本信息]**  
+#### Install
 
-[用户基本信息]:http://mp.weixin.qq.com/wiki/index.php?title=获取用户基本信息  
-
-探索几种根据用户发送文本，通过`res.text`被动回复的方式：  
-
-**匹配正则表达式**    
-
-```
-wx.text /(.+)天气/, (req, res) ->
-  res.text "#{req.params[1]}，晴[太阳]"
-```
-**接收文本常量**    
-
-```
-wx.text '你好', (req, res) ->
-  res.text "#{req.user.nickname}，么么哒"
-```
-**接收任意文本**    
-
-```
-wx.text (req, res) ->
-  res.text "#{req.content}，喵呜~"
-```
-*`wx`按注册顺序匹配消息，最后注册接收任意文本句柄。
-
-## 接受其他消息
-
-###  图片
-下面演示了通过`wx.image`接收用户发送图片，再以`res.image`被动回复相同图片的方式：
-
-```
-wx.img, (req, res) ->
-  res.image req.media_id
-```
-可以通过`wx.download`下载图片，得到图片`buffer`:
-
-```
-wx.download req.media_id, (err, image) ->
-```
-*`res.image`亦接收图片文件路径，自动上传图片（为避免请求超时，建议预传图片，或先`ok`再发送客服图片消息）。
-
-### 语音
-下面演示了通过`wx.voice`接收用户发送图片，再以`res.voice`被动回复相同语音的方式：
-
-```
-wx.voice, (req, res) ->
-  res.voice req.media_id
-```
-可以通过`wx.download`下载图片，得到语音`buffer`:
-
-```
-wx.download req.media_id, (err, voice) ->
-```
-*`res.voice`亦接收语音文件路径，自动上传语音（为避免请求超时，建议预传语音，或先`ok`再发送客服语音消息）。
-
-### 视频
-下面演示了通过`wx.video`接收用户发送图片，再以`res.video`被动回复视频文件的方式：
-
-```
-wx.video, (req, res) ->
-  res.video
-    title        : '视频标题'
-    description  : '视频描述'
-    video        : 'video.mp4'
-```
-
-### 地理位置
-下面演示了通过`wx.location`接收用户发送的地理位置，通过`req.label`、`req.location_y`、`req.location_x`获取地址、维度、经度的方式：
-
-```
-wx.location, (req, res) ->
-  coordinate = req.location_x + ',' + req.location_y
-  res.text "您在#{req.label or coordinate}"
-```
-
-### 链接
-下面演示了通过`wx.link`接收用户发送链接，再通过`req.title`、`req.description`、`req.url`获取标题、描述与链接的方式：
-
-```
-wx.link, (req, res) ->
-  res.text "《#{req.title}》一文发人深省…"
-```
-##  发送消息
-
-###  文本
-**被动回复文本消息：**
-
-```
-wx.text '文本', (req, res) ->
-  res.text '北京，晴[太阳]'
-```
-5秒内无法应答时，先`200`，再通过`req.user`发送客服文本消息（避免微信服务器发起重试）：
-
-```
-wx.text '文本', (req, res) ->
-  res.ok()
-    req.user.text '北京，晴[太阳]'
-```
-**主动发送客服文本消息：**
-
-```
-wx.user('xx_xxx').text('北京，晴[太阳]')
-```
-
-###  图片
-**被动回复图片消息：**
-
-使用`res.image`被动回复图片。既可指定本地文件路径，由`wx`自动上传图片；亦可直接传入有效的`media_id`，省略上传图片步骤。
-
-```
-wx.image, (req, res) ->
-   res.image req.media_id
-```
-如需上传图片，建议先`200`，再通过`req.user`发送客服消息，以免因上传耗时超5秒导致重试。
-
-```
-wx.img, (req, res) ->
-  res.ok()
-    req.user.image 'image.jpg'
-```
-上传图片获取`media_id`方式为：
-
-```
-wx.upload 'image', 'image.jpg', (req, res) ->
-  # res.media_id 是上传图片的 media_id
-```
-**主动发送客服图片消息：**
-
-```
-wx.user('xx_xxx').image('image.jpg')
-```
-
-###  语音
-**被动回复语音消息：**
-
-使用`res.voice`被动回复语音。既可指定本地文件路径，由`wx`自动上传语音；亦可直接传入有效的`media_id`，省略上传语音步骤。
-
-```
-wx.voice, (req, res) ->
-   res.voice req.media_id
-```
-如需上传语音，建议先`200`，再通过`req.user`发送客服消息，以免因上传耗时超5秒导致重试。
-
-```
-wx.voice, (req, res) ->
-  res.ok()
-    req.user.image 'voice.amr'
-```
-上传图片获取`media_id`方式为：
-
-```
-wx.upload 'voice', 'voice.amr', (req, res) ->
-  # res.media_id 是可以重用的语音 media_id
-```
-**主动发送客服语音消息：**
-
-```
-wx.user('xx_xxx').voice('image.jpg')
-```
-
-###  视频
-**被动发送视频消息：**
-
-使用`res.video`被动回复视频。既可指定本地文件路径，由`wx`自动上传语音；亦可直接传入有效的`media_id`，省略上传视频步骤。
-
-```
-wx.video, (req, res) ->
-  res.video
-    title        : '视频标题'
-    description  : '视频描述'
-    video        : 'video.mp4'
-```
-如需上传视频，建议先`200`，再通过`req.user`发送客服消息，以免因上传耗时超5秒导致重试。
-
-```
-wx.video, (req, res) ->
-  res.ok()
-    req.user.video ...
-```
-上传视频获取`media_id`方式为：
-
-```
-wx.upload 'video', 'video.mp4', (req, res) ->
-  # res.media_id 是可以重用的视频 media_id
-```
-**主动发送视频消息：**
-
-```
-wx.user('xx_xxx').video ...
-```
-
-###  音乐
-**被动发送音乐消息：**
-
-需上传专辑图片时，先`200`，再通过`req.user.music`发送客服音乐消息（避免上传耗时超5秒，微信服务器发起重试）：
-
-```
-wx.text '音乐', (req, res) ->
-  music =
-    title        : '音乐标题'
-    description  : '音乐描述'
-    music_url    : 'http://weixinjs.org/music.mp3'
-    hq_music_url : 'http://weixinjs.org/music.mp3'
-    thumb_media  : 'cover.jpg'
-  res.music music
-```
-无客服消息权限，或已知专辑封面`thumb_media_id`时，可直接回复音乐：
-
 ```
-wx.text '音乐', (req, res) ->
-  res.music music
+npm install --save universal-redux
 ```
-上传缩略图获取`media_id`方式为：
 
-```
-wx.upload 'thumb', 'cover.jpg', (req, res) ->
-  # res.thumb_media_id 是可以重用的缩略图 thumb_media_id
+### Customization
 
-```
-**主动发送视频消息：** 请举一反三
+The configuration file in your project at `config/universal-redux.config.js` defines what properties you want to customize. You can start by copying the [annotated example](https://github.com/bdefore/universal-redux/blob/master/config/universal-redux.config.js). The configuration file is optional and is only necessary if you wish to modify default behavior.
 
-###  图文
-**被动发送图文消息：**
+#### Routes
 
-```
-wx.text '图文', (req, res) ->
-  news = [
-    title       : '头条新闻标题'
-    description : '头条新闻描述'
-    pic_url     : ''
-    url         : ''
-  ,
-    title       : '次条新闻标题'
-    description : '次条新闻描述'
-    pic_url     : ''
-    url         : ''
-  ]
-  res.news news
-```
-亦可通过req.user发送客服新闻消息
+Generally kept in `src/routes.js`, this is where you define what routes map to what views. See [`routes.js`](https://github.com/bdefore/react-redux-universal-hot-example/blob/example-project/src/routes.js) in the example project.
 
-```
-wx.text '新闻', (req, res) ->
-  res.ok()
-  req.user.news news
-```
-**主动发送图文消息：** 举一反三
+#### Webpack configuration
 
-###  转客服
-**消息转多客服：**
+Any items specified in the `webpack.config` of your configuration will be merged with the [default Webpack configuration](https://github.com/bdefore/universal-redux/blob/master/config/webpack.config.js). You may also turn on `verbose` mode to see the exact Webpack configuration you are running.
 
-通过`res.transfer`方法，将消息转发到多客服：
+#### Express middleware
 
-```
-wx.text /客服.*/, (req, res) ->
-  res.transfer()
-```
-*[公共平台开发者文档]有更多关于多客服的开发者资料。在[多客服]网站下载客户端。
+You can add Express middleware by creating your own server.js like so:
 
-[公共平台开发者文档]:http://mp.weixin.qq.com
-[多客服]:http://dkf.qq.com
+```javascript
+import { express, renderer, start } from 'universal-redux';
+import config from '../config/universal-redux.config.js';
 
-##  点击按钮
+const app = express(config);
 
-响应按钮点击，我们努力迫近最为自然的方式：   
-使用`wx.click`方法，指定被点击按钮名称，即可捕捉该按钮点击事件。
+// app.use(someMiddleware);
+// app.use(someOtherMiddleware);
 
+app.use(renderer(config));
+start(app, config);
 ```
-wx.click '点击按钮', (req, res) ->
-   res.text "被#{req.user.nickname}点了一下[害羞]"
-```
-
-##  编辑按钮
 
-编辑菜单是一种内容创意，应当由`markdown`来完成。使用`wx`，你可以立即预览菜单效果，无需关注更多。安装`wx`后，可以通过`http://server.address/wx/admin`地址进入管理界面.
+You will need to run this server.js instead of calling the default universal-redux-server.
 
-通过以下Markdown格式的文件可以编辑并实时预览按钮。
-
-```
-+ 点击按钮 
-+ [链接文档](http://mp.weixin.qq.com/wiki) 
-+ 二级菜单
-   - [链接跳转](http://github.com/baoshan/wx)
-   - 拉取信息
-```
+Alternatively, you may create your own Express instance, add middleware beforehand and pass that instance as parameter when calling `universal.app(app)`.
 
+#### Redux middleware
 
+You can activate your own Redux middleware by specifying the `middleware` property in the configuration file. This must be a path to a file which exports each middleware as a function. All properties specified in `globals` will be available to the middleware.
 
-##  扫描二维码登录
-**服务器端**
+#### Adding your own items to HTML head
 
-通过`wx.scan`注册扫码处理流程*。响应句柄参数分别为：
+The `html.head` configuration allows you to define your own `<head>` that will be merged with the necessary items for serverside rendering. You can see an example of this in the JWT project [here](https://github.com/bdefore/universal-redux-jwt/blob/master/src/containers/Head/Head.js).
 
-1.  浏览器请求，包含`req.session`会话、`req.user`微信用户、`req.query`二维码参数；
-2.  微信响应，可被动回复各种消息；
-3.  浏览器回调方法，可向浏览器发送任意数据。
+Alternatively, you can specify `html.root` in your configuration and this will be used instead of the default one. If you do take that approach, you'll want to be sure to include the items from `src/server/head.js` and `src/server/body.js`.
 
-```
-wx.scan (req, res, desktop_callback) ->
-  req.session.user = req.user
-  res.text "#{req.user.nickname}从#{req.query.from}登录"
-  desktop_callback req.user
-```
-**标记语言***
+#### Webpack Isomorphic Tools configuration
 
-```
-    <script src="/wx/wx.js"></script>     
-    <img id="登录二维码" src="/wx/qrcode?from=网页" />
-```
-**浏览器端**
+You can add or override the default [webpack-isomorphic-tools](https://github.com/halt-hammerzeit/webpack-isomorphic-tools) configuration, by providing a `toolsConfigPath` value to your `config.js`.
 
-```
-$('#登录二维码').scan (user) -> 
-  {headimgurl: src, nickname: title} = user
-  $img = $ "<img src='#{src}' /><p>#{title}</p>"
-  $(@).replaceWith($img)
-```
-*建议为所有二维码指定名称进行分类，见临时二维码与永久二维码部分。
+#### Scripts
 
-##  临时二维码
-指定名称，可为二维码分类。下面二维码名称为`fruits`：
+The following npm bin aliases have been defined:
 
 ```
-    <script src="/wx/wx.js"></script>     
-    <img src="/wx/qrcode/fruits?name=cherry" />
+universal-redux-watch
+universal-redux-server
+universal-redux-build
 ```
-*`wx`自动为被扫描的二维码增加`scanned`类名。
-
-服务器端在`wx.scan`中指定二维码名称，注册该类二维码的处理流程。
 
-```
-wx.scan 'fruits', (req, res, desktop_callback) ->
-  res.text "#{req.user.nickname}偷吃了#{req.query.name}"
-  desktop_callback '吃一口'
-```
-##  永久二维码
-*永久二维码图案稳定，永不过期，适于印刷品、广告等，实现来源统计用途。
-名称在`1`－`100000`间为永久二维码，`[continuous]`条码支持连续扫描：
+You'll generally call these from the corresponding section of your project's scripts. See [`package.json`](https://github.com/bdefore/react-redux-universal-hot-example/blob/example-project/package.json) in the example project.
 
-**服务器端**
+### What version to use
 
-通过`permanent`名称注册永久二维码扫码处理流程，用`req.params.scene_id`获取编号。
+Peer dependencies for each version:
 
-```
-wx.scan 'permanent', (req, res, callback) ->
-  {nickname} = req.user
-  {from} = req.query
-  {scene_id} = req.params
-  res.text "#{nickname}扫描#{from}编号#{scene_id}的永久二维码"
-  callback req.user
-```
-**浏览器端**
+#### 0.x
 
-通过`scan`方法，捕捉永久二维码扫描事件
+[Babel](https://github.com/babel/babel) 5, [Redux Router](https://github.com/acdlite/redux-router)
 
 ```
-$('#永久二维码').scan ({nickname: title, headimgurl: src}) ->
-  $img = $("<img src='#{src}' title='#{title}' />")
-  $('#div_headimgs').append($img)
-  $img.load -> $(@).addClass('loaded')
+"react": "^0.14.3",
+"react-dom": "^0.14.3",
+"react-router": "^1.0.0",
+"redux-router": "^1.0.0-beta4"
 ```
 
-##  关注与取消关注
-**关注**
+#### 1.x
 
-通过`wx.subscribe`注册关注事件。
+[Babel](https://github.com/babel/babel) 5, [Redux Simple Router](https://github.com/rackt/react-router-redux)
 
 ```
-wx.subscribe (req, res) ->
-  nickname = req.user.nickname
-  res.text "[礼物]欢迎#{nickname}关注微信应用框架！"
+"react": "^0.14.3",
+"react-dom": "^0.14.3",
+"react-router": "^1.0.0",
+"redux-simple-router": "^1.0.1"
 ```
-*当用户通过扫描二维码关注时，如已注册相应的二维码扫码处理流程，则交给该流程处理，不触发`subscribe`事件，仍可根据`scan`事件的`req.event`为`subscribe`判断用户为通过扫码关注。
 
-**取消关注**
+#### 2.x
 
-通过`wx.unsubscribe`注册取消关注事件。
+[Babel](https://github.com/babel/babel) 6, [Redux Simple Router](https://github.com/rackt/react-router-redux)
 
 ```
-wx.unsubscribe (req, res) ->
-  # 按具体需求进行处理。
-  res.ok()
+"react": "^0.14.3",
+"react-dom": "^0.14.3",
+"react-router": "^1.0.0",
+"redux-simple-router": "^1.0.1"
 ```
 
-##  获取关注者列表
-通过`wx.subscribers`方法，拉取关注者列表：
+#### 3.x
 
-```
-wx.subscribers (err, res) ->
-  console.log res if res
-```
-获取到的关注者列表结构：
+[Babel](https://github.com/babel/babel) 6, [React Router](https://github.com/rackt/react-router) 2, [React Router Redux](https://github.com/rackt/react-router-redux) 3 (Redux Simple Router renamed) is available but optional.
 
 ```
-{
-  "total" : 23000,
-  "count" : 10000,
-  "data"  : {"openid": ["OPENID1", ...]},
-  "next_openid": "NEXT_OPENID"
-}
+"react": "^0.14.3",
+"react-dom": "^0.14.3",
+"react-router": "^2.0.0-rc4",
 ```
-亦可指定`next_openid`，拉取后续用户列表：
 
-```
-wx.subscribers next_openid, (err, res) ->
-```
-###  更多时候……
+#### 4.x
 
-可以考虑用`wx.populate_subscribers`获取指定范围内关注者完整信息（分页显示关注用户、批量发送客服消息等）。
+[Babel](https://github.com/babel/babel) 6, [React Router](https://github.com/rackt/react-router) 2, [React Router Redux](https://github.com/rackt/react-router-redux) 3 (Redux Simple Router renamed) is available but optional.
 
 ```
-wx.populate_subscribers from, to, (err, res) ->
-  {total, subscribers} = res if res
+"react": "^15.0.0",
+"react-dom": "^15.0.0",
+"react-router": "^2.0.0",
 ```
-获取到的指定范围关注者完整信息结构：
 
-```
-{
-  total       : 23000,
-  subscribers : [{
-    "subscribe"      : 1,
-    "openid"         : "......",
-    "nickname"       : "Band",
-    "sex"            : 1,
-    "language"       : "zh_CN",
-    "city"           : "广州",
-    "province"       : "广东",
-    "country"        : "中国",
-    "headimgurl"     : "http://wx.qlogo.cn/...",
-    "subscribe_time" : 1382694957
-  }, ...]
-}
-```
+### Local development
 
-## 有限状态机
+If you'd like to develop on Universal Redux, clone the repo and while testing with a project that uses it, you can run `PROJECT_PATH=/path/to/project npm run dev` from the Universal Redux root, which will watch for changes and copy them over to your project's `node_modules/universal-redux/lib` directory. If any of your changes add dependencies, you will need to copy those over manually.
 
-定义用户所处状态与各状态间跃迁条件，微信应用框架帮助您分解复杂业务，且毫不妥协研发体验：
+### Inspirations
 
-```
-wx.click '申办', (req, res) ->
-  res.text '回复“固话”申办固话，回复“宽带”申办宽带。'
-  req.user.state '申办'
-  
-wx.state('申办').text '固话', (req, res) ->
-  req.text '正在为您申办固话业务，请提供认证照片。'
-  req.user.state '认证'
-  
-wx.state('认证').image (req, res) ->
-  req.text '已收到您提交的认证图片，请发送装机地址。'
-  req.user.state '装机'
-  
-wx.state('装机').location (req, res) ->
-  res.text "工程师正前往#{req.label}为您安装固话。"
-  req.user.state null
-```
+This project forked off of [react-redux-universal-hot-example](https://github.com/erikras/react-redux-universal-hot-example). Please refer to the README there for more details and join the discussion at the [pull request](https://github.com/erikras/react-redux-universal-hot-example/pull/759).
