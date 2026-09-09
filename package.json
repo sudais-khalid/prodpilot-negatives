@@ -1,54 +1,51 @@
 {
-  "name": "express-hbs",
-  "version": "3.0.0",
-  "description": "Express handlebars template engine complete with multiple layouts, partials and blocks.",
-  "keywords": [
-    "express4",
-    "express",
-    "handlebars",
-    "layout",
-    "partials"
-  ],
-  "main": "index.js",
-  "directories": {
-    "example": "example"
+  "name": "route-list",
+  "version": "1.3.6",
+  "description": "Beautifully shows Express/Koa/Hapi/Fastify routes in CLI.",
+  "bin": "./src/cli.js",
+  "main": "./lib/main.js",
+  "types": "./main.d.ts",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
   },
+  "engineStrict": true,
   "scripts": {
-    "lint": "oxlint --quiet && oxfmt --check .",
-    "lint:fix": "oxlint --fix && oxfmt .",
-    "format": "oxfmt .",
-    "test": "mocha",
-    "posttest": "pnpm lint",
-    "coverage": "nyc --check-coverage mocha",
-    "preship": "pnpm test",
-    "ship": "pro-ship"
+    "test": "node --test"
   },
+  "keywords": [
+    "express",
+    "koa",
+    "hapi",
+    "fastify",
+    "paths",
+    "routes",
+    "endpoints",
+    "list"
+  ],
+  "author": "Vladimir Mikulic",
+  "license": "MIT",
+  "files": [
+    "src",
+    "lib",
+    "main.d.ts"
+  ],
+  "funding": "https://ko-fi.com/vladimirmikulic",
+  "homepage": "https://github.com/VladimirMikulic/route-list#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TryGhost/express-hbs"
-  },
-  "bugs": "https://github.com/TryGhost/express-hbs/issues",
-  "author": "Mario Gutierrez <mario@barc.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "cookie-parser": "1.4.7",
-    "express": "5.2.1",
-    "i18n": "0.15.3",
-    "mocha": "11.8.0",
-    "nyc": "18.0.0",
-    "oxfmt": "0.65.0",
-    "oxlint": "1.80.0",
-    "rewire": "9.0.1",
-    "supertest": "7.2.2"
+    "url": "https://github.com/VladimirMikulic/route-list.git"
   },
   "dependencies": {
-    "@tryghost/pro-ship": "1.1.8",
-    "handlebars": "4.7.9",
-    "lodash": "4.18.1",
-    "readdirp": "3.6.0"
+    "chalk": "^5.6.2",
+    "commander": "^14.0.1",
+    "express-list-endpoints": "^7.1.1"
   },
-  "optionalDependencies": {
-    "js-beautify": "^2.0.0"
-  },
-  "packageManager": "pnpm@10.34.5+sha512.a4ee05f2f73658255bd6a89859c065a45c28a57daefae2c893a168ee2b73168c37b91e83e57ea67654ad03f03031746430e8bce38e362e042605fb8abc80192e"
+  "devDependencies": {
+    "@hapi/hapi": "^21.4.3",
+    "@koa/router": "^14.0.0",
+    "express": "^4.21.1",
+    "fastify": "^5.6.1",
+    "koa": "^3.0.2"
+  }
 }
