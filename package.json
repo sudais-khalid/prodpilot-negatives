@@ -1,12 +1,40 @@
 {
-  "name": "payments-api",
-  "version": "1.0.0",
-  "private": true,
-  "main": "src/server.js",
-  "engines": { "node": ">=20 <21" },
+  "name": "express-oauth-server",
+  "version": "2.0.0",
+  "description": "OAuth provider for express",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "lint": "jshint .",
+    "test": "mocha --recursive test"
   },
-  "dependencies": { "express": "^4.19.2", "helmet": "^7.1.0" }
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/seegno/express-oauth-server"
+  },
+  "keywords": [
+    "express",
+    "oauth",
+    "oauth2"
+  ],
+  "author": {
+    "name": "Nuno Sousa",
+    "email": "nfs@seegno.com"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "bluebird": "^3.0.5",
+    "express": "^4.13.3",
+    "oauth2-server": "3.0.0"
+  },
+  "devDependencies": {
+    "body-parser": "^1.14.1",
+    "jshint": "^2.8.0",
+    "mocha": "^2.3.3",
+    "should": "^7.1.0",
+    "sinon": "^1.14.1",
+    "supertest": "^0.15.0"
+  },
+  "engines": {
+    "node": ">=0.11"
+  }
 }
