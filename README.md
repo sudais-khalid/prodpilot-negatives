@@ -1,153 +1,172 @@
-![](expressa.png)
-[![CircleCI](https://circleci.com/gh/thomas4019/expressa.svg?style=svg)](https://circleci.com/gh/thomas4019/expressa)
+# Search Facebook events by location (as a service)
+A Express.js-based webservice to get public Facebook events by location and distances, as well as search terms. It can be used as a starting point for an location-based app for example. 
 
-## data-driven extendable API middleware for Node.js/Express
+## Current FB issues
+**This package is currently no longer usable, because FB changed the way one can access the event data. It seems that access to the Events API is no longer granted, see the lengthy discussion at [facebook-events-by-location-core/#29](https://github.com/tobilg/facebook-events-by-location-core/issues/29).**
 
-Expressa makes it easy to create basic APIs by using [JSON schema](http://json-schema.org):
+## Motivation
+As Facebook has discontinued the FQL query API for all apps created after 2014-04-30, it has gotten much more complicated to search for public Facebook events by location and distances. This is the reason why this project was created.
 
-* django-like __admin interface__ for creating collection-__REST__ endpoints and managing permissions 
-* collection schema's can be edited *and* added __through the admin interface__ 
-* re-use collection schema's in your frontend to generate forms
-* easily extendable so you can add complex features as well
-* define collections as [JSON schema](http://json-schema.org) instead of custom code
-* per-collection database storage: *MongoDB*, *PostgreSQL*, or *JSON-files* (useful for version control). JSON-file and in-memory storage work out of the box; MongoDB and PostgreSQL each need their driver installed alongside expressa (see [Getting Started](#getting-started))
+## Basics
+The implementation of [facebook-events-by-location-core](https://github.com/tobilg/facebook-events-by-location-core), which is used for providing the Facebook events search functionality, uses regular Facebook Graph API calls in a three-step approach to get the events: 
 
-> Best of all: it's just middleware, not a framework 
+1. Search for places in the radius of the passed coordinate and distance (`/search?type=place&q={query}&center={coordinate}&distance={distance}`)
+2. Use the places to query for their events in parallel (`/?ids={id1},{id2},{id3},...`)
+3. Unify, filter and sort the results from the parallel calls and return them to the client
 
-* mix-and-mash: easily throw in other express middleware and endpoints 
-* decorate expressa-endpoints: add event listeners which stop/modify requests (responses)
+## Known limitations
 
---------------------------------
+* The Graph API has some "instabilities" with search results. It's possible that the amount of results returned can vary between calls within seconds
+* The `/search` endpoint "magically" limits the number of results, independent from the `distance` used (larger distance doesn't guarantee more results)
+* [Rate limiting](https://developers.facebook.com/docs/graph-api/advanced/rate-limiting) will apply, but I experienced no call blocks within a reasonable amount of service requests. Be aware that the way this application works, there are potentially hundreds of (counted) Graph API calls per request to `/events`.
 
-## Getting Started
+## Installation
 
-It's very easy to install expressa in your project directory:
+### As NPM package
 
-    mkdir myapp
-    cd myapp
-    npm init
-    npm install expressa express
+First, create a new folder: `$ mkdir fb-event-test` (where `fb-event-test` is just an example). 
 
-Expressa requires Node.js 20 or newer.
+Then change to the newly created directory, and do a quick initialization of your new project with `$ cd fb-event-test && npm init --yes`. 
 
-### Storage drivers
+The application can be installed via `$ npm install facebook-events-by-location` and started with `$ node node_modules/facebook-events-by-location/index.js`.
 
-Expressa's core is storage-agnostic, so you install the driver for the backend you
-actually use. JSON-file storage (the default) and in-memory storage need nothing
-extra. For the database backends, add the matching driver:
+### Git
+To clone the repository, use
 
-    npm install pg         # for 'postgres' storage
-    npm install mongodb    # for 'mongo' storage
+`git clone https://github.com/tobilg/facebook-events-by-location.git`
 
-Both are declared as optional peer dependencies, so they are not installed
-automatically and you never carry a driver for a database you don't use. If a
-collection is configured for a backend whose driver is missing, expressa throws
-an error telling you which package to install.
+and run `cd facebook-events-by-location && npm i && npm start` to install the dependencies and run the web service.
 
-Create a file `app.js` with the following code (or just copy the middle 3 lines into your existing express app)
+### As Docker microservice
+You can build the Docker image via `docker build -t <yourTag> .` locally if you like. Also, there's an [official image](https://hub.docker.com/r/tobilg/facebook-event-search/) (called `tobilg/facebook-event-search`) in the Docker hub.
+ 
+The service can be launched via Docker like this:
 
-    var express = require('express');
-    var app = express();
+`docker run -d --name fb-event-search -p 3000:3000 tobilg/facebook-event-search`
 
-    var expressa = require('expressa');
-    app.use('/admin', expressa.admin({ apiurl: '/api/' }));
-    app.use('/api', expressa.api());
+This would expose the app on port 3000 on the Docker host. If you want to specify another port for the app, you can use `-e "PORT=10000"` together with `--net="host"` (be aware of the security implications of host networking). 
 
-    app.listen(3000, function () {
-      console.log('Example app listening on port 3000!');
-    });
+## Environment variables
+You can use the following environment variables to influence the application:
 
-Now start the server by running `node --use-strict app.js` and navigate your browser to [http://localhost:3000/admin/](http://localhost:3000/admin/)
+* `FEBL_ACCESS_TOKEN`: Used to define a general **App Access Token** to be used for the requests to the Graph API. This is overridden if the request specifies an `accessToken` parameter. If it's not specified, every request to `/events` needs to contain an `accessToken` parameter.
+* `FEBL_CORS_WHITELIST`: You can pass a comma-separated domain whitelist to enable CORS headers (e.g. `http://www.test.com,http://www.test.org`). If you don't specify this variable, CORS will be enabled on all origins.
+* `HOST`: The IP address the Express application should bind to. Default is `0.0.0.0` (all available IP addresses).
+* `PORT`: The port on which the application should run. Default is `3000`.
 
-## API endpoints
+## API
+The basic endpoint is `GET /events`, but there's also a `GET /health` endpoint to enable health checks.
 
-Once you add a collections in the admin interface, every collection will have the following endpoints:
+### Swagger API docs
 
-| method | endpoint                                     | description  |
-|--------|----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| POST   | /users/login                                 | expects JSON in the message body. e.g. `{"email": "email@example.com", password: "<the password>"}                                                                                             |
-| GET    | /:collection                                 | get an array of all documents in a collection                                                                                                                                                  |
-| GET    | /:collection/:id                             | get a specific document                                                                                                                                                                        |
-| GET    | /:collection/?query={..}                     | get an array of documents matching the [mongo query](https://www.npmjs.com/package/mongo-query)                                            |
-| GET    | /:collection/?query={..}&limit=10&offset=10&orderby={"meta.created":1}  | same as previous, but with targeted output control and sorting |
-| GET    | /:collection/?query={..}&page=1&pageitems=10 | similar to previous, but with pagination support |
-| GET    | /:collection/?query={..}&page=1&pageitems=10&pagemetadisable=1 | same as previous but *slightly* faster and with less pagination detail |
-| GET    | /:collection/?query={..}&fields={..}         | the fields param can be used to do a mongo projection to request only specific fields |
-| GET    | /:collection/?fieldname=value                | get an array of documents matching with the specified values. See [node-mongo-querystring](https://github.com/Turistforeningen/node-mongo-querystring) for details.                            |
-| GET    | /:collection/schema                          | get the collection schema                                                                                                                                                                      |
-| POST   | /:collection/                                | create a new document, the message body should be the JSON document                                                                                                                            |
-| PUT    | /:collection/:id                             | replace the document with id. The message body should be the JSON document. If the _id in document is different (the old document _id is deleted and a new one with id is created.)            |
-| POST   | /:collection/:id/update                      | modify the document with id using a [mongo update query](https://docs.mongodb.com/manual/reference/method/db.collection.update/#update-parameter). The message body should be the update query |
-| DELETE | /:collection/:id                             | delete the document                                                                                                                                                                            |
+The Swagger API docs are available at [http://tobilg.github.io/facebook-events-by-location/](http://tobilg.github.io/facebook-events-by-location/).
 
-> Supported Data: Only standard JSON (strings, numbers, booleans, null) is supported. Dates can be stored as strings using [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
+### Query paramenters
 
-## Documentation 
+Mandatory parameters are the following:
 
-* Requests
-    * [Querying](doc/querying.md)
-    * [Making authenticated requests](doc/authentication.md)
-    * [Pagination and sorting](doc/querying.md)
-* Collections
-    * [Automatic fields](doc/automatic-fields.md)
-* Server-side implementation
-    * [Modifying behavior using listeners](doc/listeners.md)
-    * [Adding custom endpoints](doc/custom-endpoints.md)
-    * [Accessing the database](doc/database.md)
-* Admin Panel
-    * [Relationships](doc/relationships.md)
-    * [Permissions](doc/permissions.md)
-    * [Uploading files](doc/uploading-files.md)
-* [Testing / CI integrating your expressa app](doc/testing.md)
+* `lat`: The latitude of the position/coordinate the events shall be returned for
+* `lng`: The longitude of the position/coordinate the events shall be returned for
 
-# Folder Structure
-The Expressa configuration is in a folder called "data" in your project. There is a subfolder for the collections that you choose to persist to disk. By default, the following will be added once you finish the installation.
+Non-mandatory parameters
 
-| folder     | purpose                                                                              |
-|------------|--------------------------------------------------------------------------------------|
-| data/settings   | Config file per environment. Can include custom variables specific to your project.  |
-| data/role       | List of roles in the permission system. Defaults to "Admin", "Anonymous" and "Authenticated".   |
-| data/collection | JSON Schemas and settings for each collection.                                       |
+* `query`: The term(s) on which you want to narrow down your *location search* (this only filters the places, not the events itself!).
+* `categories`: The comma-separated list of [place categories](https://developers.facebook.com/docs/places/web/search#categories) that should be searched for. Valid entries are `ARTS_ENTERTAINMENT`, `EDUCATION`, `FITNESS_RECREATION`, `FOOD_BEVERAGE`, `HOTEL_LODGING`, `MEDICAL_HEALTH`, `SHOPPING_RETAIL`, `TRAVEL_TRANSPORTATION`. Default is none.  
+* `accessToken`: The **App Access Token** to be used for the requests to the Graph API.
+* `distance`: The distance in meters (it makes sense to use smaller distances, like max. 2500). Default is `100`.
+* `sort`: The results can be sorted by `time`, `distance` (legacy option, will be removed in future release), `venueDistance`, `eventDistance`, `venue` or `popularity`. If omitted, the events will be returned in the order they were received from the Graph API.
+* `version`: The version of the Graph API to use. Default is `v2.10`.
+* `since`: The start of the range to filter results. Format is Unix timestamp or `strtotime` data value, as accepted by [FB Graph API](https://developers.facebook.com/docs/graph-api/using-graph-api#time).
+* `until`: The end of the range to filter results.
+* `showActiveOnly`: Whether to show only active (non-draft, non-cancalled Events). Default is `true`, otherwise `false` can be passed to show all Events regardless of their state. 
 
-Note: The files in these data folders are JSON so they can be manually updated or you can edit them in the Admin UI. Generally these files should be checked into version control.
+### Query results
+The response will be `application/json` and contain an `events` property containing the array of event objects, as well as a `metadata` property with some stats. See below for an example.
 
-# Admin UI Examples/Screenshots
-* [Example: Creating a blog collection and post in the UI](doc/blogexample.md)
-* [Managing CRUD permissions in the UI](doc/permissions.md)
+#### Location/Place data in the query result
 
-## Expressa ecosystem
-* [expressa-folder](https://npmjs.org/package/expressa-folder) easily extend expressa collections with ORM-ish js-code (get.js/post.js/functions.js/etc) & setup sub-endpoints
-* [expressa-swagger](https://npmjs.org/package/expressa-swagger) middleware to generate online api documentation
-* [expressa-client](https://npmjs.org/package/expressa-client) middleware to generate browser REST-client (+nodejs client)
-* [expressa-cli](https://npmjs.org/package/expressa-cli) commandline interface for expressa 
+There are two types of locations in the resulting event JSON objects:
 
-## Roadmap
-* Automatic GraphQL Support
-* JWT token expiration
-* Support cookie based authentication as well
-* File uploads
+* `place`: This is the consolidated Place object from the Venue (which is actually the Page object which was returned from the Place search), and the Event's place data. The latter will supersede the Place page data.
+* `venue.location`: This is the location data of the Page object.
 
-## Alternatives
-Expressa is not primarily built for simple blog websites or mostly static content websites. For those a cms like Keystone.js and enduro.js could work or maybe you could build you site with a static site generator like Hugo. For database-driven websites that need a strong CRUD backend where you want a clear separation between the frontend and backend, expressa.js is a great choice.
+As the Facebook Graph API can only be queried for Places via coordinate/distance, and Events can have their own, "real" location, it's possible that the place data which is found in `place` can be outside the boundaries of the original query. 
 
-## Changelog
+Consequences:
+* If you want consistency regarding query vs. results, you should use `venue.location`. 
+* If you want accuracy regarding the real event location, you should use `place`. 
 
-| Version | Important Changes                                                  |
-|---------|--------------------------------------------------------------------|
-| 0.5.3   | Fixes bug in install where enforce permissions wasn't activated. Fixes CSV download. |
-| 0.5.2   | Fixes bug when installing super user in Admin tool |
-| 0.5.1   | Includes built Admin UI in npm package |
-| 0.5.0   | Migrates server to use async/await. New Admin UI built with Vue.js. Adds request-id headers |
-| 0.4.6   | Fix some errors in the install process when choosing to store users in mongo or postgres |
-| 0.4.5   | Security update |
-| 0.4.1   | db.create (postgres) now returns the id instead of the full document. |
-| 0.4.0   | Pagination now starts with page 1. Delete requests can no longer bypass rejections by listeners. Updated permission error codes/messages. Error responses now always json (with an "error" field explaining) PUT /collection/:id response changed to match POST /collection |
-| 0.3.3   | Fixes security vulnerability with the "edit own" permission and the :collection/:id/update endpoint. Update immediately. |
-| 0.3.2   | Pagination is now supported by specifying the "page" and "limit"   |
-| 0.3.1   | Makes "development" the default settings file instead of "production". Use NODE_ENV environmental variable to change this. To quickly migrate, just rename your settings file to "development".  |                                                       
+### Sample call
 
-## Inspired by
+`http://localhost:3000/events?lat=40.710803&lng=-73.964040&distance=100&sort=venue&accessToken=YOUR_APP_ACCESS_TOKEN` (make sure you replace `YOUR_APP_ACCESS_TOKEN` with a real access token!)
 
-* [deployd](http://deployd.com/) (API design)
-* [Django](https://www.djangoproject.com/) (admin UI)
-* [Drupal](https://www.drupal.org/) (roles/permissions)
+### Sample output (shortened)
+
+```javascript
+{
+  "events": [{
+    "id": "836655879846811",
+    "name": "U.S. Girls at Baby's All Right",
+    "type": "public",
+    "coverPicture": "https://scontent.xx.fbcdn.net/v/t31.0-8/s720x720/24883312_1521878931228093_3223523563973203944_o.jpg?oh=9bc3e5c5d45e39c542b057b92df95243&oe=5AC0353F",
+    "profilePicture": "https://scontent.xx.fbcdn.net/v/t1.0-0/c0.0.200.200/p200x200/24862268_1521878931228093_3223523563973203944_n.jpg?oh=23ec7dc943402ec7e0137f2d17f27719&oe=5AC246F8",
+    "description": "Friday, April 13th @ Baby's All Right\n\nAdHoc Presents\n\nU.S. Girls\n\nTickets:  http://ticketf.ly/2j7AegO\n\n| Baby's All Right |\n146 Broadway @ Bedford Ave | Williamsburg, Brooklyn \nJMZ-Marcy, L-Bedford, G-Broadway | 8pm | $12 | 21+\n\nCheck out our calendar and sign up for our mailing list http://adhocpresents.com/",
+    "distance": 89,
+    "startTime": "2018-04-13T20:00:00-0400",
+    "endTime": null,
+    "timeFromNow": 9982924,
+    "isCancelled": false,
+    "category": "MUSIC_EVENT",
+    "ticketing": {
+      "ticket_uri": "http://ticketf.ly/2j7AegO"
+    },
+    "place": {
+      "id": "460616340718401",
+      "name": "Baby's All Right",
+      "location": {
+        "city": "Brooklyn",
+        "country": "United States",
+        "latitude": 40.71012,
+        "longitude": -73.96348,
+        "state": "NY",
+        "street": "146 Broadway",
+        "zip": "11211"
+      }
+    },
+    "stats": {
+      "attending": 20,
+      "declined": 0,
+      "maybe": 77,
+      "noreply": 6
+    },
+    "distances": {
+      "venue": 89,
+      "event": 89
+    },
+    "venue": {
+      "id": "460616340718401",
+      "name": "Baby's All Right",
+      "about": "babysallright@gmail.com",
+      "emails": ["babysallright@gmail.com"],
+      "coverPicture": "https://scontent.xx.fbcdn.net/v/t31.0-8/s720x720/20507438_1418517768261582_7945740169309872258_o.jpg?oh=24280a4732605e140c227db955c8d5e0&oe=5AC6B878",
+      "profilePicture": "https://scontent.xx.fbcdn.net/v/t1.0-1/p200x200/1480734_642185745894792_5820988503650852577_n.png?oh=c6e72b8a5645644e7dd3eb3d2161329f&oe=5AC0CD2D",
+      "category": "Bar",
+      "categoryList": ["Bar", "Breakfast & Brunch Restaurant", "Dance & Night Club"],
+      "location": {
+        "city": "Brooklyn",
+        "country": "United States",
+        "latitude": 40.71012,
+        "longitude": -73.96348,
+        "state": "NY",
+        "street": "146 Broadway",
+        "zip": "11211"
+      }
+    }
+  }],
+  "metadata": {
+    "venues": 100,
+    "venuesWithEvents": 2,
+    "events": 25
+  }
+}
+```
