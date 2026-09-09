@@ -1,159 +1,107 @@
-# [h5bp](http://h5bp.github.com) [![Build Status](https://secure.travis-ci.org/h5bp/server-configs-node.svg)](http://travis-ci.org/h5bp/server-configs-node)
+<div align="center"><img height="120px" src="https://github.com/hu-snail/arco-admin-template/blob/master/src/assets/logo/logo.svg"/></div>
 
----
+<h1 align="center">Arco admin template</h1>
 
-**:warning: This module is depecrated (Express 3.x) and is being [rewritten](https://github.com/h5bp/server-configs-node/issues/57).**
+## 简介
 
----
+`Arco-admin-template`是一个免费开源的中后台模板你，使用了`React17`、`vite2`、`react-router-dom v6`、`less` 等主流技术开发，开箱即用的中后台前端解决方案。
 
-**HTML5 boilerplate** (H5BP) server config for node.js.
+项目目的：
 
-`h5bp` for node.js follows the guidelines of the [Apache] version:
- - secures backup and hidden files.
- - optionally redirects `www.yoursite.tld` to `yoursite.tld` or vice versa.
- - offers a simple cache busting mechanism.
- - normalize content types.
- - optionally enables CORS.
- - sets correct cache expires depending of the type of resource.
- - and some others...
+- 学习`React Hook`相关 Api
+- 掌握`Vite2`插件机制、构建配置
+- 学习 `Ract-router-dom v6`新特性
 
-It also focuses on offering additional features such as on-the-fly script concatenation using **CommonJS** or **AMD**.
+## 特性
 
-[Apache]: https://github.com/h5bp/server-configs-apache
+- 技术栈：React17/React-router-dom v6/vite2
+- Javascript 版本
+- 可自定义主题
+- 国际化方案
+- Mock 数据方案
+- 暗夜模式
+- Arco Design UI 库
 
-## Installation
+## 文档
 
-```bash
-npm install --save h5bp
+正在编写中......
+
+## 准备
+
+- `Node`: 版本建议 >= 12.0.0 [下载链接](https://nodejs.org/zh-cn/download/)
+- `Git`: [版本管理工具](https://www.git-scm.com/download)
+- `Visual Studio Code`: [最新版本](https://code.visualstudio.com/Download/)
+  - [Eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)- 脚本代码检查
+  - [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) - 代码格式化
+  - [Stylelin](https://marketplace.visualstudio.com/items?itemName=stylelint.vscode-stylelint) - css 格式化
+
+## 安装使用
+
+- 获取代码
+
+```sh
+git clone https://github.com/hu-snail/arco-admin-template.git
 ```
 
-## Quick Start
+- 安装依赖
 
-### Create a simple http server
-
-```javascript
-var h5bp = require('h5bp');
-
-var app = h5bp.createServer({ root: __dirname + '/public' });
-app.listen(3000);
+```sh
+yarn install
 ```
 
-`app` is an instance of an `express` application. You can add additional middlewares or routes if you like.
+- 运行
 
-### Use it as a connect / express middleware
-
-```javascript
-var express = require('express'),
-    h5bp = require('h5bp');
-
-var app = express();
-app.use(h5bp({ root: __dirname + '/public' }));
-
-// in order to serve files, you should add the two following middlewares
-app.use(express.compress());
-app.use(express.static(__dirname + '/public'));
-app.listen(3000);
+```sh
+yarn dev
 ```
 
-### Concatenate scripts on-the-fly
+- 打包
 
-If you want to split your application source files but only serve one file, you can use the on-the-fly concatenation.
-If you are familiar with node.js, you can use the **CommonJS** style. You can also use the **AMD** style.
-
-```javascript
-app.use(h5bp({
-    root: __dirname + '/public',
-    scripts: {
-        files: ['app.js'],
-        processor: 'commonjs'   // can also be "amd"
-    }
-}));
+```sh
+yarn build
 ```
 
-At the first request hit to `/app.js`, the server will compile, cache and serve the file. Any subsequent request will
-serve the cached file without any performance impact.
+- 本地预览
 
-So, this feature is meant to be used with the [cache busting mechanism] in order to ensure the client always has the
-latest resource version. If you restart your server, the cache will be flushed.
+```sh
+yarn preview
+```
 
-Note that the next release will provide a *development mode* where the server will simply disable its cache and
-always serve the latest version of the file.
+## 预览截图
+- 登录页
+<img src="https://github.com/hu-snail/arco-admin-template/blob/master/src/assets/screenshot/login.png"/>
 
-[cache busting mechanism]: https://github.com/h5bp/server-configs/tree/master/apache#cache-busting
+- 仪表盘
+<img src="https://github.com/hu-snail/arco-admin-template/blob/master/src/assets/screenshot/work.png"/>
 
-## Options
+- 资源
+<img src="https://github.com/hu-snail/arco-admin-template/blob/master/src/assets/screenshot/res.png"/>
 
-There are several options you can pass to the middleware.
+- 按钮组件
+<img src="https://github.com/hu-snail/arco-admin-template/blob/master/src/assets/screenshot/comp-btn.png"/>
 
-`app.use(h5bp(options));`
+- 设置
+<img src="https://github.com/hu-snail/arco-admin-template/blob/master/src/assets/screenshot/setting.png"/>
 
-### root
+- 404
+<img src="https://github.com/hu-snail/arco-admin-template/blob/master/src/assets/screenshot/500.png"/>
 
-Tells the filesystem path to the root directory of static resources. This options is mandatory if you serve static files.
+## 浏览器支持
 
-### www
+本地开发推荐使用`Chrome 80+` 浏览器
 
-Forces **www** if `true`, forces **non-www** if `false`, does nothing if not defined. By default, this is disabled.
+支持现代浏览器, 不支持 IE
 
-### cors
+## 维护者
 
-Enables **CORS** for everything. By default this is disabled.
+[@hu-snail](https://github.com/hu-snail/)
 
-### dotfiles
+## 捐赠
 
-Enables access to dotfiles. By default this is disabled.
+如果你觉得这个项目对你有帮助，你可以帮作者买一杯咖啡表示支持!
 
-### scripts
-
-Tells which scripts to concatenate.
-
-This is an object with the following properties:
-
-#### files
-
-This is an array of files to concatenate. Their path is relative to the `root` option. Their URL will be absolute.
-
-For example, if you set **files** to `['scripts/app.js']` and **root** to `/home/h5bp/app/`:
- - The path will be: `/home/h5bp/app/scripts/app.js`.
- - The served URL will be: `yoursite.tld/scripts/app.js`.
-
-#### processor
-
-Tells which processor to use for scripts concatenation.
-
-For now, it can be one of the following values:
- - `commonjs`: will concatenate files using the **CommonJS** method (`require/exports`).
- - `amd`: will concatenate files using the **AMD** method (`require/define`).
-
-## Additional options
-
-The `h5bp.createServer` function takes the same options, plus additional ones.
-
-The `callback` is optional. It is a custom middleware that you can register directly if you want to.
-
-`h5bp.createServer(options, [callback]);`
-
-### server
-
-Tells which type of server you want to use.
-
-It can be one of the following values:
- - `express`: uses **express**, this is the default value.
- - `connect`: uses **connect**.
-
-### logger
-
-Tells if you want to log server requests or not. This can also be an object containing [logger options].
-
-[logger options]: http://www.senchalabs.org/connect/middleware-logger.html
-
-### compress
-
-Tells if you want to serve `gzipped` content or not. By default this is `true`.
-
-If you are using `h5bp` as a middleware, we strongly encourage you to use the `compress` middleware provided by
-**express** / **connect**.
+<div style="display: flex; justify-content: space-between;"><img  width="48%" src="https://gitee.com/hu-snail/vue3-admin-element-template/raw/master/src/assets/zfb.jpeg"/></div>
 
 ## License
 
-[MIT License](LICENSE.md)
+[MIT © hu-snail-2021](https://github.com/hu-snail/arco-admin-template/blob/master/LICENSE)
