@@ -1,23 +1,15 @@
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+/// <reference types="vitest" />
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
+// https://vitejs.dev/config https://vitest.dev/config
 export default defineConfig({
-  base: "/",
-  assetsInclude: ["**/*.fbx", "**/*.obj"],
-  plugins: [react()],
-  server: {
-    fs: {
-      allow: [
-        decodeURIComponent(new URL(".", import.meta.url).pathname),
-        decodeURIComponent(new URL("../模型库", import.meta.url).pathname),
-      ],
-    },
-  },
+  plugins: [react(), tsconfigPaths()],
   test: {
-    environment: "jsdom",
     globals: true,
-    pool: "threads",
-    maxWorkers: 1,
-    setupFiles: "./src/test/setup.ts",
-  },
-});
+    environment: 'happy-dom',
+    setupFiles: '.vitest/setup',
+    include: ['**/test.{ts,tsx}']
+  }
+})
