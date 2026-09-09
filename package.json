@@ -49,6 +49,9 @@
     "rimraf": "^3.0.2",
     "supertest": "^3.4.2"
   },
+  "engines": {
+    "node": ">= 20"
+  },
   "author": "Thomas Hansen <th4019@example.com> (http://thomashansen.me)",
   "scripts": {
     "test": "cross-env NODE_ENV=local_test_suite mocha --exit",
