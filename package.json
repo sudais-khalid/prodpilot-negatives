@@ -1,42 +1,32 @@
 {
-  "name": "facebook-events-by-location",
-  "description": "A Express.js-based microservice to get public Facebook events by location, distance and search terms.",
-  "keywords": [
-    "Facebook",
-    "events",
-    "event",
-    "search",
-    "location",
-    "microservice",
-    "backend",
-    "app"
-  ],
-  "version": "0.14.1",
-  "private": false,
-  "scripts": {
-    "start": "node ./index",
-    "publish-please": "publish-please",
-    "prepublish": "publish-please guard"
-  },
-  "dependencies": {
-    "cors": "^2.8.4",
-    "express": "^4.16.2",
-    "facebook-events-by-location-core": "^0.10.1",
-    "morgan": "^1.9.0"
-  },
-  "bugs": {
-    "url": "https://github.com/tobilg/facebook-events-by-location/issues"
-  },
+  "name": "express-api-starter",
+  "type": "module",
+  "version": "2.0.0",
+  "description": "A basic starter for an express.js API",
+  "author": "CJ R. <cj@null.computer> (https://w3cj.now.sh)",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tobilg/facebook-events-by-location.git"
+    "url": "https://github.com/w3cj/express-api-starter.git"
   },
-  "homepage": "https://github.com/tobilg/facebook-events-by-location",
-  "engines": {
-    "node": ">=0.10.0"
+  "keywords": [],
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/index.js",
+    "lint": "eslint --fix src",
+    "test": "vitest run"
   },
-  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
+    "zod": "^4.1.12"
+  },
   "devDependencies": {
-    "publish-please": "^2.3.1"
+    "@antfu/eslint-config": "^6.2.0",
+    "eslint-plugin-format": "^1.0.2",
+    "supertest": "^7.1.4",
+    "vitest": "^4.0.6"
   }
 }
