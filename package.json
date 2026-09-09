@@ -1,62 +1,61 @@
 {
-  "name": "myorg-client",
-  "private": true,
-  "version": "1.0.0",
-  "description": "MyOrg Portals",
-  "scripts": {
-    "dev": "turbo run dev --parallel",
-    "lint": "turbo run lint",
-    "test": "vitest",
-    "clean": "turbo run clean && rm -rf node_modules",
-    "prepare": "husky install",
-    "lint-staged": "pnpm --workspace-concurrency=1 exec lint-staged",
-    "new-app": "pnpm exec plop app",
-    "new-app-ts": "pnpm exec plop app-ts",
-    "new-library": "pnpm exec plop library",
-    "new-library-ts": "pnpm exec plop library-ts",
-    "docs": "pnpm --filter \"@myorg/docs\" run docs",
-    "e2e": "pnpm --filter \"@myorg/e2e\" run e2e",
-    "changeset-create": "pnpm exec changeset add",
-    "changeset-save-prerelease": "pnpm exec changeset pre enter",
-    "changeset-save": "pnpm exec changeset version",
-    "changeset-tag": "pnpm exec changeset tag",
-    "changeset-tag-and-publish": "pnpm exec changeset publish"
+  "name": "express-rest-api-boilerplate",
+  "version": "0.0.0",
+  "author": "Lukas Aichbauer <l.aichbauer@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aichbauer/express-rest-api-boilerplate.git"
   },
-  "keywords": [],
-  "author": "Aaron Agarunov",
+  "homepage": "https://github.com/aichbauer/express-rest-api-boilerplate#readme",
+  "bugs": {
+    "url": "https://github.com/aichbauer/express-rest-api-boilerplate/issues"
+  },
+  "scripts": {
+    "prestart": "npm run drop-sqlite-db || true",
+    "start": "npm run nodemon",
+    "poststart": "npm run create-sqlite-db",
+    "dev": "cross-env NODE_ENV=development node ./api/api.js",
+    "nodemon": "nodemon --exec npm run dev",
+    "create-sqlite-db": "shx touch ./db/database.sqlite",
+    "drop-sqlite-db": "shx rm ./db/database.sqlite",
+    "lint": "eslint ./api/. ./config/. ./test/.",
+    "prepush": "npm test",
+    "pretest": "npm run lint",
+    "production": "cross-env NODE_ENV=production node ./api/api.js",
+    "test": "npm run create-sqlite-db; cross-env NODE_ENV=testing jest --coverage; npm run drop-sqlite-db",
+    "test-ci": "jest --coverage --forceExit"
+  },
+  "jest": {
+    "globals": {
+      "__DEV__": true
+    },
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
   "dependencies": {
-    "@changesets/cli": "^2.25.2",
-    "@emotion/react": "^11.10.5",
-    "@emotion/styled": "^11.10.5",
-    "@mui/icons-material": "^5.10.16",
-    "@mui/material": "^5.10.17",
-    "@mui/styles": "^5.11.0",
-    "@vitejs/plugin-react-swc": "^3.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^5.3.4",
-    "vite": "^4.0.0"
+    "bcrypt-nodejs": "^0.0.3",
+    "body-parser": "^1.18.2",
+    "core-js": "^2.6.9",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "express-routes-mapper": "^1.0.2",
+    "helmet": "^3.12.0",
+    "jsonwebtoken": "^8.2.1",
+    "sequelize": "^6.0.0",
+    "sqlite3": "^4.0.0"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@types/node": "^18.11.13",
-    "@types/react": "^18.0.26",
-    "@types/react-dom": "^18.0.9",
-    "@types/react-router-dom": "^5.3.3",
-    "eslint-config-myorg": "workspace:*",
-    "husky": "^8.0.2",
-    "jsdom": "latest",
-    "lint-staged": "^13.1.0",
-    "plop": "^3.1.1",
-    "prettier": "^2.8.1",
-    "turbo": "^1.6.3",
-    "typescript": "^4.9.4",
-    "vitest": "^0.25.8"
-  },
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": "eslint --ext .js,.jsx,.ts,.tsx --fix --max-warnings=0",
-    "**/*.{js,jsx,json,yml,yaml,css,less,scss,ts,tsx,md,graphql}": "prettier --write"
-  },
-  "packageManager": "pnpm@7.18.2"
+    "cross-env": "^5.1.4",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "husky": "^0.14.3",
+    "jest": "^24.8.0",
+    "nodemon": "^1.17.3",
+    "shx": "^0.2.2",
+    "supertest": "^3.0.0"
+  }
 }
