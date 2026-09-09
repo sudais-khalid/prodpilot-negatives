@@ -66,6 +66,7 @@
     "dist"
   ],
   "scripts": {
+    "build": "unbuild",
     "dev": "unbuild --stub",
     "lint": "eslint .",
     "test": "pnpm --filter \"./examples/*\" --filter=\"!./examples/tanstack\" build && vitest run",
