@@ -1,45 +1,68 @@
 {
-  "name": "fullstack-apollo-express-postgresql-boilerplate",
-  "version": "1.0.0",
-  "description": "",
+  "name": "expressa",
+  "version": "2.1.1",
+  "description": "API framework using JSON schemas",
   "main": "index.js",
-  "engines": {
-    "node": "10.11.0"
-  },
-  "scripts": {
-    "start": "nodemon --exec babel-node src/index.js",
-    "test:run-server": "TEST_DATABASE_URL=mongodb://localhost:27017/mytestdatabase npm start",
-    "test:execute-test": "TEST_DATABASE_URL=mongodb://localhost:27017/mytestdatabase mocha --require @babel/register 'src/**/*.spec.js'",
-    "test": "echo \"No test specified\" && exit 0"
-  },
-  "keywords": [],
-  "author": "Robin Wieruch <hello@rwieruch.com> (https://www.robinwieruch.de)",
-  "license": "ISC",
-  "devDependencies": {
-    "@babel/core": "^7.1.6",
-    "@babel/node": "^7.0.0",
-    "@babel/preset-env": "^7.1.6",
-    "@babel/register": "^7.0.0",
-    "axios": "^0.18.0",
-    "chai": "^4.2.0",
-    "mocha": "^5.2.0",
-    "nodemon": "^1.18.7",
-    "morgan": "^1.9.1"
+  "repository": "https://github.com/thomas4019/expressa",
+  "bin": {
+    "expressa": "./scripts/expressa"
   },
   "dependencies": {
-    "apollo-server": "^2.2.3",
-    "apollo-server-express": "^2.2.3",
-    "bcrypt": "^3.0.2",
-    "cors": "^2.8.5",
-    "dataloader": "^1.4.0",
-    "dotenv": "^6.1.0",
-    "express": "^4.16.4",
-    "graphql": "^14.0.2",
-    "graphql-iso-date": "^3.6.1",
-    "graphql-resolvers": "^0.3.2",
-    "jsonwebtoken": "^8.4.0",
-    "mongoose": "^5.3.14",
-    "uuid": "^3.3.2",
-    "validator": "^10.9.0"
-  }
+    "ajv": "^8.20.0",
+    "bcryptjs": "2.4.3",
+    "body-parser": "^1.20.6",
+    "debug": "^4.4.3",
+    "dot-object": "^2.1.5",
+    "express": "^4.22.2",
+    "jfs": "^0.2.6",
+    "jsonwebtoken": "^9.0.0",
+    "mongo-query": "^0.5.7",
+    "mongo-query-to-postgres-jsonb": "^0.2.19",
+    "mongo-querystring": "4.1.1",
+    "on-finished": "^2.4.1",
+    "randomstring": "^1.3.1",
+    "sift": "^5.1.0",
+    "uuid": "^11.1.1"
+  },
+  "peerDependencies": {
+    "mongodb": ">=3.5.7",
+    "pg": ">=8.4.2"
+  },
+  "peerDependenciesMeta": {
+    "mongodb": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "cross-env": "^7.0.2",
+    "cypress": "^15.3.0",
+    "eslint": "^7.1.0",
+    "mocha": "^11.7.2",
+    "mocha-junit-reporter": "^2.0.2",
+    "mongodb": "^3.7.4",
+    "nodemon": "^3.1.10",
+    "pg": "^8.16.3",
+    "rimraf": "^3.0.2",
+    "supertest": "^3.4.2"
+  },
+  "author": "Thomas Hansen <th4019@example.com> (http://thomashansen.me)",
+  "scripts": {
+    "test": "cross-env NODE_ENV=local_test_suite mocha --exit",
+    "testlint": "cross-env NODE_ENV=local_test_suite mocha --exit && npm run lint",
+    "testdebug": "cross-env NODE_ENV=local_test_suite DEBUG=expressa mocha -b --exit && npm run lint",
+    "ci-test": "cross-env NODE_ENV=local_test_suite mocha test --reporter mocha-junit-reporter --exit",
+    "clean": "rimraf node_modules",
+    "lint": "eslint .",
+    "fixlint": "eslint . --fix",
+    "testserver": "rimraf testdata && node test/testserver.js",
+    "testserver-watch": "rimraf testdata && nodemon test/testserver.js",
+    "cypress": "cypress open",
+    "testdbs": "./scripts/run_db_tests.sh",
+    "testcypress": "./scripts/run_cypress_tests.sh"
+  },
+  "license": "MIT"
 }

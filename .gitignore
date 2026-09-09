@@ -1,5 +1,4 @@
-logfile
-
-.env
-
-node_modules/
+.idea
+node_modules
+testdata
+.DS_Store
