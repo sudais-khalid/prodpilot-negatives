@@ -1,172 +1,210 @@
-<div align="center">
-  <img src="public/images/athena-mark.svg" width="88" alt="Athena logo" />
-  <h1>Athena Personal Academic Page</h1>
-  <p>A clean, publication-first academic homepage for researchers.</p>
-  <p>
-    <a href="https://aaronz345.github.io/Athena-personal-academic-page/"><strong>View the live demo ↗</strong></a>
-    &nbsp;·&nbsp;
-    <a href="https://github.com/new?template_name=Athena-personal-academic-page&template_owner=AaronZ345"><strong>Use this template ↗</strong></a>
-    &nbsp;·&nbsp;
-    <a href="src/content/README.md">Content guide</a>
-    &nbsp;·&nbsp;
-    <a href="#deploy-with-github-pages">Deployment</a>
-  </p>
-  <p>
-    <a href="https://github.com/AaronZ345/Athena-personal-academic-page/actions/workflows/pages.yml"><img src="https://img.shields.io/github/actions/workflow/status/AaronZ345/Athena-personal-academic-page/pages.yml?branch=main&label=deploy&style=flat-square" alt="GitHub Pages deployment" /></a>
-    <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react&logoColor=white" alt="React 19" /></a>
-    <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite 7" /></a>
-    <a href="LICENSE"><img src="https://img.shields.io/github/license/AaronZ345/Athena-personal-academic-page?style=flat-square" alt="MIT license" /></a>
-  </p>
-</div>
+express-validation
+==================
 
-<a href="https://aaronz345.github.io/Athena-personal-academic-page/">
-  <img src="public/images/athena-og.svg" width="100%" alt="Preview of Athena Personal Academic Page" />
-</a>
+[![Build Status](https://travis-ci.org/AndrewKeig/express-validation.svg?branch=master)](https://travis-ci.org/AndrewKeig/express-validation)
+[![npm module](https://badge.fury.io/js/express-validation.svg)](https://www.npmjs.org/package/express-validation)
+[![Current Version](https://flat.badgen.net/npm/v/express-validation?icon=npm)](https://www.npmjs.org/package/express-validation)
+[![airbnb-style](https://flat.badgen.net/badge/eslint/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
+[![Coverage Status](https://coveralls.io/repos/github/AndrewKeig/express-validation/badge.svg)](https://coveralls.io/github/AndrewKeig/express-validation)
+[![npm downloads](https://img.shields.io/npm/dm/express-validation.svg?style=flat)](https://www.npmjs.com/package/express-validation)
+[![Known Vulnerabilities](https://snyk.io/test/github/AndrewKeig/express-validation/badge.svg?targetFile=package.json)](https://snyk.io/test/github/AndrewKeig/express-validation?targetFile=package.json)
 
-Athena is a React and Vite template for maintaining an academic website without mixing content into page components. Profiles, publications, projects, teaching, talks, awards, service, and site metadata all live in small files under `src/content/`.
 
-## What is included
+`express-validation` is an express middleware that validates a request and returns a response with errors; if any of the configured validation rules fail.
 
-| Area | What Athena provides |
-| --- | --- |
-| Research profile | Compact profile sidebar, research interests, contact links, CV, Scholar, ORCID, DBLP, GitHub, and more |
-| Publications | Grouped papers, featured cards, compact rows, figures, equal-contribution notes, artifact links, and automatic metrics |
-| Academic activity | News, projects, teaching, talks, education, experience, awards, and service sections |
-| Project links | Repository-aware action links with cached GitHub star counts and static fallbacks |
-| Presentation | Responsive desktop and mobile layouts, light and dark themes, sticky navigation, and accessible image fallbacks |
-| Publishing | SEO and social metadata plus a ready-to-run GitHub Pages workflow |
+We use [joi](https://github.com/hapijs/joi/tree/master) to define validation rules. We have a hard dependency on Joi in order to avoid compatibility issues with Joi releases.  We are using snyk, which should help with this process.
 
-Section order, navigation labels, notes, and visibility are controlled from one array in `src/content/site.js`. There is no second navigation config to keep in sync.
+Currently support Joi v17.x.x
 
-## Start in three steps
+## Parameter types
+We support validating the following parameter types:
 
-### 1. Create your site
+- headers
+- params (path)
+- query
+- cookies
+- signedCookies
+- body
 
-Click [Use this template](https://github.com/new?template_name=Athena-personal-academic-page&template_owner=AaronZ345) to create a clean repository without Athena's commit history. For a root GitHub Pages site, name it `USERNAME.github.io`.
+## Install
 
-```bash
-git clone https://github.com/USERNAME/USERNAME.github.io.git
-cd USERNAME.github.io
+Install with npm:
+
+```sh
+npm i express-validation --save
 ```
 
-Keeping the repository name is also fine; GitHub Pages will publish it at `https://USERNAME.github.io/REPOSITORY/`.
+Install with yarn:
 
-### 2. Run it locally
-
-```bash
-npm ci
-npm run dev
+```sh
+yarn add express-validation
 ```
 
-Open `http://127.0.0.1:5173/`.
+## Example
 
-### 3. Replace the sample content
+In order to setup and use `express-validation` consider the following simple express application. It has a single route; configured to use the `express-validation` middleware function `validate`; it accepts as input `loginValidation`; which defines validation rules for this route.
 
-Most users only need to edit `src/content/` and add images to `public/images/`.
-
-| Start here | Controls |
-| --- | --- |
-| `src/content/profile.js` | Name, role, affiliation, avatar, contact links, research focus, and bio |
-| `src/content/publications.js` | Papers, groups, venues, links, tags, figures, and featured cards |
-| `src/content/site.js` | Site title, metadata, repository link, section order, labels, and visibility |
-| `src/content/news.js` | News timeline |
-| `src/content/projects.js` | Research projects and repository links |
-| `src/content/teaching.js`, `talks.js` | Teaching and talks |
-| `src/content/education.js`, `experience.js` | Education and positions |
-| `src/content/awards.js`, `services.js` | Honors and academic service |
-
-The [content reference](src/content/README.md) documents every field, including publication grouping, rich text fragments, card selection, image paths, and project layout.
-
-For a first publish, start with `profile.js`, `publications.js`, and `site.js`. The remaining sections can stay as examples or be disabled from the `sections` array until you need them.
-
-## Publications
-
-Each paper uses a `group` string. Preferred group order comes from `publicationGroups` in `src/content/site.js`; groups that are not listed there still appear afterward.
-
-Card layout is explicit:
-
-- `featured: true` renders a large publication card.
-- Missing or false `featured` renders a compact row.
-- A featured paper may omit `image`; Athena then shows a generated text placeholder.
-- Adding an image does not automatically make a paper featured.
-
-Featured papers appear before compact papers within a group. Array order is preserved inside both sets.
-
-## Sections and navigation
-
-The `sections` array in `src/content/site.js` controls page order and the top navigation:
 
 ```js
-{ id: "talks", title: "Talks", nav: "Talks", enabled: false }
+const express = require('express')
+const bodyParser = require('body-parser')
+const { validate, ValidationError, Joi } = require('express-validation')
+
+const loginValidation = {
+  body: Joi.object({
+    email: Joi.string()
+      .email()
+      .required(),
+    password: Joi.string()
+      .regex(/[a-zA-Z0-9]{3,30}/)
+      .required(),
+  }),
+}
+
+const app = express();
+app.use(bodyParser.json())
+
+app.post('/login', validate(loginValidation, {}, {}), (req, res) => {
+  res.json(200)
+})
+
+app.use(function(err, req, res, next) {
+  if (err instanceof ValidationError) {
+    return res.status(err.statusCode).json(err)
+  }
+
+  return res.status(500).json(err)
+})
+
+app.listen(3000)
+```
+We have defined two rules `email` and `password`.  They are encapsulated inside `body`; which is important; as this defines their location within the request.
+
+We also need to setup an express global error handler, `express-validation` will pass errors to this handler.  We can check within the handler for errors of type `validationError` distinguishing validation errors from other types of error.
+
+
+## Errors
+
+`express-validation`, by `default` will return errors in the following format, an object `details` keyed by `parameter`, each containing an array of errors in `joi` format.
+
+```json
+{
+      "name": "ValidationError",
+      "message": "Validation Failed",
+      "statusCode": 400,
+      "error": "Bad Request",
+      "details": {
+        "body": [
+          {
+            "message": "\"password\" is not allowed to be empty",
+            "path": [
+              "password"
+            ],
+            "type": "string.empty",
+            "context": {
+              "label": "password",
+              "value": "",
+              "key": "password"
+            }
+          }
+        ]
+      }
+    }
 ```
 
-- Set `enabled: false` to hide a section.
-- Set `nav: false` to keep a section on the page but remove it from the top navigation.
-- Reorder entries to reorder the page.
+We support other simpler formats via configuration
 
-## Images
+- `keyByField`, flattens the error details object to a list of messages, keyed by field name
 
-Store site images in `public/images/` and use paths without a leading slash:
-
-```js
-image: "images/my-paper.png"
+```json
+{
+  "name": "ValidationError",
+  "message": "Validation Failed",
+  "statusCode": 400,
+  "error": "Bad Request",
+  "details": [
+    { "accesstoken": "\"accesstoken\" is not allowed to be empty" },
+    { "password": "\"password\" is not allowed to be empty" }
+  ]
+}
 ```
 
-That path format works for both root sites and project-page deployments. Publication figures use a `16:9` frame with `object-fit: contain`.
+## API
 
-For `.png`, `.jpg`, and `.jpeg` publication figures, Athena requests a same-name WebP first and retains the original as a fallback:
+`express-validation` exposes the following api:
 
-```text
-public/images/my-paper.png
-public/images/my-paper.webp
-```
+### `validate(schema, [options], [joiOptions]) => [validationError]`
 
-Images already stored as `.webp` or `.svg` are used directly. See the [image guide](src/content/README.md#publication-images-and-webp) for conversion commands and favicon setup.
+The exported `validate` function takes a `schema` object and two optional arguments,
+`options` and `joiOptions` and
+returns a `validationError` instance if schema contains errors.
 
-## Links and GitHub stats
+#### `schema` (Object)
 
-Athena recognizes common link labels such as `Paper`, `Code`, `Dataset`, `Demo`, `Slides`, `Video`, `DOI`, `BibTeX`, `Poster`, `Documentation`, `Project`, and `Download` and assigns matching icons.
+Default: `{}`
 
-Repository links can include a static star fallback:
+Includes validition rules, defined using `joi`, the rules are keyed by the following `parameter` types:
+  - headers
+  - params (path)
+  - query
+  - cookies
+  - signedCookies
+  - body
 
-```js
-{ label: "Code", href: "https://github.com/owner/repo", stars: 128 }
-```
 
-The fallback appears immediately. Athena refreshes it from the GitHub API when the persistent browser cache is missing or stale and keeps the last successful value if anonymous API requests are rate-limited. Stats appear on repository-style links by default; use `showGithubStats: true` to override that behavior.
+#### `options` (Object)
 
-## Deploy with GitHub Pages
+Default: `{ context: false, statusCode: 400, keyByField: false }`
 
-1. Open the repository's **Settings → Pages** page.
-2. Set **Build and deployment → Source** to **GitHub Actions**.
-3. Update `siteMeta.url`, `siteMeta.image`, and `siteMeta.repositoryUrl` in `src/content/site.js`.
-4. Push to `main`.
+Options, used by `express-validation`:
+  - `context`, grants Joi access to the request object. This allows you to:
+      - reference other parts of the request in your validations, see [Joi.ref](https://hapi.dev/family/joi/api/?v=17.1.0#refkey-options) 
+      - specify default values, see [Joi.default](https://hapi.dev/module/joi/api/#anydefaultvalue)
+      - will also cast values, e.g. strings to integer
+    - default { context: false } 
+  - `statusCode`, defaults to `400`, this will also set the error message via nodes [status codes](https://nodejs.org/api/http.html#http_http_status_codes)
+    - default { statusCode: 400 }
+  - `keyByField`, flattens the error details object to a list of messages, keyed by field name
 
-The included [`pages.yml`](.github/workflows/pages.yml) workflow installs dependencies, builds `dist/`, and deploys it. Vite automatically uses `/` for `USERNAME.github.io` repositories and `/REPOSITORY/` for project Pages sites.
 
-For a custom domain, set `siteMeta.url` to that domain before deploying.
+#### `joiOptions` (Object)
 
-## Project map
+Default: `{}`
 
-```text
-src/content/          Editable profile and academic content
-src/App.jsx           Page rendering and section composition
-src/icons.js          Link and section icon mappings
-src/styles.css        Design system and responsive layout
-src/assets/fonts/     Bundled icon fonts
-public/images/        Avatars, paper figures, favicons, and social preview assets
-.github/workflows/    GitHub Pages deployment
-```
+Options, used by `joi`, see [Joi options](https://hapi.dev/family/joi/api/?v=17.1.0#anyvalidateasyncvalue-options), note:
 
-## Check before publishing
 
-```bash
-npm run build
-npm run preview
-```
 
-Check the profile details, publication links and figures, section navigation, both color themes, and the mobile layout. Also confirm that every PNG or JPEG publication figure has its same-name WebP file.
+### `ValidationError`
+We expose a custom error; `ValidationError`, use this in you global express error handler to distinguish validation errors from other types of error.
+
+
+### `Joi`
+We also expose the version of Joi we have as a dependency, in order to avoid compatibility issues with other versions of Joi.
+
+
+
+## Examples
+
+For more information on how to use `express-validation` please see the following examples:
+
+#### abortEarly
+[`abortEarly.test.js`](/__tests__/integration/abortEarly.test.js)
+
+You can return multiple errors, not just the first encountered, by setting, the joi option `abortEarly: false`
+
+#### context
+[`context.test.js`](/__tests__/integration/context.test.js)
+
+Enabling the `context` in `options`, allows you to reference other parts of the request in your validation.
+
+#### defaults
+[`default.test.js`](/__tests__/integration/defaults.test.js)
+
+You can specify `joi` `default` values in your schema.
 
 ## License
 
-Athena Personal Academic Page is available under the [MIT License](LICENSE).
+This work is licensed under the MIT License (see the LICENSE file).
+
+https://github.com/AndrewKeig/express-validation/blob/master/LICENSE

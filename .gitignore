@@ -1,8 +1,6 @@
-node_modules/
-dist/
-_site/
 .DS_Store
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+npm-debug.log
+node_modules
+.vscode
+coverage/**
+.clinic
