@@ -30,7 +30,6 @@ nbproject
 # Node files
 #################
 npm-debug.log
-node_modules
 .idea
 *.iml
 .DS_Store
