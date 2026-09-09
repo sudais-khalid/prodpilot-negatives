@@ -1,40 +1,45 @@
 {
-  "name": "express-oauth-server",
-  "version": "2.0.0",
-  "description": "OAuth provider for express",
-  "main": "index.js",
-  "scripts": {
-    "lint": "jshint .",
-    "test": "mocha --recursive test"
-  },
+  "name": "template-react",
+  "description": "A Phaser 3 project template that demonstrates React communication and uses Vite for bundling.",
+  "version": "1.2.0",
+  "type": "module",
   "repository": {
     "type": "git",
-    "url": "git://github.com/seegno/express-oauth-server"
+    "url": "git+https://github.com/phaserjs/template-react.git"
   },
+  "author": "Phaser Studio <support@phaser.io> (https://phaser.io/)",
+  "license": "MIT",
+  "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
+  "bugs": {
+    "url": "https://github.com/phaserjs/template-react/issues"
+  },
+  "homepage": "https://github.com/phaserjs/template-react#readme",
   "keywords": [
-    "express",
-    "oauth",
-    "oauth2"
+    "phaser",
+    "phaser3",
+    "react",
+    "vite"
   ],
-  "author": {
-    "name": "Nuno Sousa",
-    "email": "nfs@seegno.com"
+  "scripts": {
+    "dev": "node log.js dev & vite --config vite/config.dev.mjs",
+    "dev-nolog": "vite --config vite/config.dev.mjs",
+    "build-nolog": "vite build --config vite/config.prod.mjs"
   },
-  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "bluebird": "^3.0.5",
-    "express": "^4.13.3",
-    "oauth2-server": "3.0.0"
+    "phaser": "4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "body-parser": "^1.14.1",
-    "jshint": "^2.8.0",
-    "mocha": "^2.3.3",
-    "should": "^7.1.0",
-    "sinon": "^1.14.1",
-    "supertest": "^0.15.0"
-  },
-  "engines": {
-    "node": ">=0.11"
+    "@eslint/js": "^9.22.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "vite": "^6.3.1",
+    "terser": "5.39.0"
   }
 }
