@@ -10,6 +10,5 @@ uploads
 
 ###############
 .DS_Store
-node_modules
 test_coverage
 private
