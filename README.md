@@ -1,53 +1,59 @@
-# Express API Starter
+# React + Recoil + React Query + React Hooks + Typescript + Axios + Vite - Starter
 
-A JavaScript Express v5 starter template with sensible defaults. For a TypeScript starter see the [express-api-starter-ts](https://github.com/w3cj/express-api-starter-ts)
+This Starter utilizes React, Recoil, React Query, React Hooks, Typescript, Axios And Vite.
 
-How to use this template:
+## [中文文档](./README_ZH.md)
 
-```sh
-pnpm dlx create-express-api@latest --directory my-api-name
-```
 
-Includes API Server utilities:
+## Screenshot
 
-- [morgan](https://www.npmjs.com/package/morgan)
-  - HTTP request logger middleware for node.js
-- [helmet](https://www.npmjs.com/package/helmet)
-  - Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
-- [cors](https://www.npmjs.com/package/cors)
-  - CORS is a node.js package for providing a Connect/Express middleware that can be used to enable CORS with various options.
+![](./screenshot1.png)
+![](./screenshot2.png)
 
-Development utilities:
 
-- [eslint](https://www.npmjs.com/package/eslint)
-  - ESLint is a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code.
-- [vitest](https://www.npmjs.com/package/vitest)
-  - Next generation testing framework powered by Vite.
-- [zod](https://www.npmjs.com/package/zod)
-  - Validated env with zod schema
-- [supertest](https://www.npmjs.com/package/supertest)
-  - HTTP assertions made easy via superagent.
+## Installation
 
-## Setup
+Clone this repo and install all dependencies
 
 ```
-pnpm install
-```
+ git clone https://github.com/ychengcloud/react-vite-admin.git
 
-## Lint
+ cd react-vite-admin
 
-```
-pnpm run lint
-```
-
-## Test
-
-```
-pnpm test
+ yarn install
 ```
 
 ## Development
 
+``` 
+yarn dev 
 ```
-pnpm run dev
+
+## Build
+
 ```
+yarn build
+```
+
+## Publish
+
+```
+yarn dist
+```
+
+## Contributing
+
+Your contributions are always welcome! [Click Here to read the guidelines](./contributing.md).
+
+## Thanks
+
+- [Antd Design](https://ant.design)
+- [Antd Design Pro](https://pro.ant.design/)
+- [Vite](https://vitejs.dev/)
+- [React Query](https://react-query.tanstack.com/)
+- [React antd admin](https://github.com/WinmezzZ/react-antd-admin.git)
+- [vue-vben-admin](https://github.com/anncwb/vue-vben-admin)
+
+## License
+
+[MIT](./LICENSE)
