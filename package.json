@@ -1,66 +1,38 @@
 {
-  "name": "laravel-breeze-react",
-  "version": "0.1.0",
+  "name": "post-investment-platform",
   "private": true,
-  "author": "Nilanth",
-  "keywords": [
-    "react",
-    "react-router",
-    "swr",
-    "tailwindcss",
-    "vercel",
-    "axios",
-    "react-hooks",
-    "laravel",
-    "sanctum",
-    "vite"
-  ],
-  "description": "Laravel Breeze is a cutting-edge React App template designed for Laravel Sanctum-based authentication, meticulously crafted using Vite.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Nilanth/larave-breeze-react",
-    "directory": "/"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "@headlessui/react": "^2.2.0",
-    "@tailwindcss/forms": "^0.5.10",
-    "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^16.0.0",
-    "@testing-library/user-event": "^14.0.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "autoprefixer": "^10.4.16",
-    "axios": "^1.0.0",
-    "postcss": "^8.4.31",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.0.0",
-    "sass": "^1.69.5",
-    "swr": "^2.2.4",
-    "tailwindcss": "^4.0.0",
-    "vite": "^6.0.0",
-    "web-vitals": "^2.1.4"
-  },
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "start": "vite",
-    "build": "vite build"
+    "dev": "vite",
+    "preview": "vite preview"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "dependencies": {
+    "@ant-design/icons": "^5.2.6",
+    "@cloudbase/js-sdk": "^3.7.1",
+    "@cloudbase/node-sdk": "^3.18.3",
+    "antd": "^5.12.0",
+    "dayjs": "^1.11.10",
+    "docx": "^8.2.4",
+    "echarts": "^5.4.3",
+    "echarts-for-react": "^3.0.2",
+    "file-saver": "^2.0.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "uuid": "^9.0.0",
+    "xlsx": "^0.18.5"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "vite": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
