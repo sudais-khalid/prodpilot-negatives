@@ -1,47 +1,57 @@
 {
-  "name": "reactjs-template",
-  "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "homepage": "https://telegram-mini-apps.github.io/reactjs-template",
+  "name": "express-hbs",
+  "version": "3.0.0",
+  "description": "Express handlebars template engine complete with multiple layouts, partials and blocks.",
+  "keywords": [
+    "express4",
+    "express",
+    "handlebars",
+    "layout",
+    "partials"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "directories": {
+    "example": "example"
+  },
   "scripts": {
-    "deploy": "gh-pages -d dist",
-    "dev": "vite",
-    "dev:https": "cross-env HTTPS=true vite",
-    "build": "tsc --noEmit && vite build",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0 --fix",
-    "preview": "vite preview",
-    "predeploy": "npm run build"
+    "lint": "oxlint --quiet && oxfmt --check .",
+    "lint:fix": "oxlint --fix && oxfmt .",
+    "format": "oxfmt .",
+    "test": "mocha",
+    "posttest": "pnpm lint",
+    "coverage": "nyc --check-coverage mocha",
+    "preship": "pnpm test",
+    "ship": "pro-ship"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TryGhost/express-hbs"
+  },
+  "bugs": "https://github.com/TryGhost/express-hbs/issues",
+  "author": "Mario Gutierrez <mario@barc.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "cookie-parser": "1.4.7",
+    "express": "5.2.1",
+    "i18n": "0.15.3",
+    "mocha": "11.8.0",
+    "nyc": "18.0.0",
+    "oxfmt": "0.65.0",
+    "oxlint": "1.80.0",
+    "rewire": "9.0.1",
+    "supertest": "7.2.2"
   },
   "dependencies": {
-    "@telegram-apps/telegram-ui": "^2.1.9",
-    "@tma.js/sdk-react": "^3.0.8",
-    "@tonconnect/ui-react": "^2.2.0",
-    "eruda": "^3.4.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.1"
+    "@tryghost/pro-ship": "1.1.8",
+    "handlebars": "4.7.9",
+    "lodash": "4.18.1",
+    "readdirp": "3.6.0"
   },
-  "devDependencies": {
-    "@eslint/js": "^9.23.0",
-    "@types/node": "^20.19.11",
-    "@types/react": "^18.3.24",
-    "@types/react-dom": "^18.3.7",
-    "@typescript-eslint/eslint-plugin": "^8.28.0",
-    "@typescript-eslint/parser": "^8.28.0",
-    "@vitejs/plugin-react-swc": "^3.11.0",
-    "cross-env": "^7.0.3",
-    "eslint": "^9.34.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "gh-pages": "^6.3.0",
-    "globals": "^15.15.0",
-    "terser": "^5.44.0",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.40.0",
-    "vite": "^6.3.5",
-    "vite-plugin-mkcert": "^1.17.8",
-    "vite-tsconfig-paths": "^5.1.4"
-  }
+  "optionalDependencies": {
+    "js-beautify": "^2.0.0"
+  },
+  "packageManager": "pnpm@10.34.5+sha512.a4ee05f2f73658255bd6a89859c065a45c28a57daefae2c893a168ee2b73168c37b91e83e57ea67654ad03f03031746430e8bce38e362e042605fb8abc80192e"
 }

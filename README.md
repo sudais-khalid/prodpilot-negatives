@@ -1,212 +1,333 @@
-# Telegram Mini Apps React Template
+# express-hbs
 
-This template demonstrates how developers can implement a single-page
-application on the Telegram Mini Apps platform using the following technologies
-and libraries:
+Express Handlebars template engine for Express apps, with nested layouts,
+named content blocks, cached partials, i18n helpers, and asynchronous helpers.
 
-- [React](https://react.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [TON Connect](https://docs.ton.org/develop/dapps/ton-connect/overview)
-- [@tma.js SDK](https://docs.telegram-mini-apps.com/packages/tma-js-sdk)
-- [Telegram UI](https://github.com/Telegram-Mini-Apps/TelegramUI)
-- [Vite](https://vitejs.dev/)
+`express-hbs` exposes Express-compatible view engine functions and a shared
+Handlebars instance. It is used by apps that want Handlebars templates with
+layout inheritance and block-style content regions while keeping the familiar
+`app.engine()` integration.
 
-> The template was created using [npm](https://www.npmjs.com/). Therefore, it is
-> required to use it for this project as well. Using other package managers, you
-> will receive a corresponding error.
+## Requirements
 
-## Install Dependencies
+- Node.js 20 or later
+- pnpm 10 when working on this repository
 
-If you have just cloned this template, you should install the project
-dependencies using the command:
+## v2.0.0
 
-```Bash
-npm install
+Version 2 was a rewrite and cleanup, with no known breaking changes. Lots of bugs were fixed which may have subtly changed behaviour.
+
+Full details: https://github.com/TryGhost/express-hbs/releases/tag/2.0.0
+
+## v1.0.0 Breaking Changes
+
+If you're upgrading from v0.8.4 to v1.0.0 there are some potentially breaking changes to be aware of:
+
+1. Handlebars @v4.0.5 - please see the [handlebars v4.0 compatibility notes](https://github.com/wycats/handlebars.js/blob/master/release-notes.md#v400---september-1st-2015)
+2. The file extension for partial files must now match the extension configured in `extname` - please see [the PR](https://github.com/TryGhost/express-hbs/pull/88)
+
+## Usage
+
+Register the engine with Express using `hbs.express4()`.
+
+```js
+var hbs = require('express-hbs');
+
+// Use `.hbs` for extensions and find partials in `views/partials`.
+app.engine('hbs', hbs.express4({
+  partialsDir: __dirname + '/views/partials'
+}));
+app.set('view engine', 'hbs');
+app.set('views', __dirname + '/views');
 ```
 
-## Scripts
+`hbs.express3()` is still available for legacy apps and accepts the same
+options:
 
-This project contains the following scripts:
-
-- `dev`. Runs the application in development mode.
-- `dev:https`. Runs the application in development mode using locally created valid SSL-certificates.
-- `build`. Builds the application for production.
-- `lint`. Runs [eslint](https://eslint.org/) to ensure the code quality meets
-  the required standards.
-- `deploy`. Deploys the application to GitHub Pages.
-
-To run a script, use the `npm run` command:
-
-```Bash
-npm run {script}
-# Example: npm run build
+```js
+app.engine('hbs', hbs.express3({
+  partialsDir: __dirname + '/views/partials'
+}));
 ```
 
-## Create Bot and Mini App
+Options for `express3()` and `express4()`:
 
-Before you start, make sure you have already created a Telegram Bot. Here is
-a [comprehensive guide](https://docs.telegram-mini-apps.com/platform/creating-new-app)
-on how to do it.
+```js
+hbs.express4({
+  partialsDir: "{String/Array} [Required] Path to partials templates, one or several directories",
 
-## Run
+  // OPTIONAL settings
+  restrictLayoutsTo: "{String} Absolute path to a directory to restrict layout directive reading from",
+  blockHelperName: "{String} Override 'block' helper name.",
+  contentHelperName: "{String} Override 'contentFor' helper name.",
+  defaultLayout: "{String} Absolute path to default layout template",
+  extname: "{String} Extension for templates & partials, defaults to `.hbs`",
+  handlebars: "{Module} Use external handlebars instead of express-hbs dependency",
+  i18n: "{Object} i18n object",
+  layoutsDir: "{String} Path to layout templates",
+  templateOptions: "{Object} options to pass to template()",
+  beautify: "{Boolean} whether to pretty print HTML, see github.com/einars/js-beautify .jsbeautifyrc",
 
-Although Mini Apps are designed to be opened
-within [Telegram applications](https://docs.telegram-mini-apps.com/platform/about#supported-applications),
-you can still develop and test them outside of Telegram during the development
-process.
-
-To run the application in the development mode, use the `dev` script:
-
-```bash
-npm run dev:https
-```
-
-> [!NOTE]
-> As long as we use [vite-plugin-mkcert](https://www.npmjs.com/package/vite-plugin-mkcert),
-> launching the dev mode for the first time, you may see sudo password request.
-> The plugin requires it to properly configure SSL-certificates. To disable the plugin, use the `npm run dev` command.
-
-After this, you will see a similar message in your terminal:
-
-```bash
-VITE v5.2.12  ready in 237 ms
-
-➜  Local:   https://localhost:5173/reactjs-template
-➜  Network: https://172.18.16.1:5173/reactjs-template
-➜  Network: https://172.19.32.1:5173/reactjs-template
-➜  Network: https://192.168.0.171:5173/reactjs-template
-➜  press h + enter to show help
-```
-
-Here, you can see the `Local` link, available locally, and `Network` links
-accessible to all devices in the same network with the current device.
-
-To view the application, you need to open the `Local`
-link (`https://localhost:5173/reactjs-template` in this example) in your
-browser:
-
-![Application](assets/application.png)
-
-It is important to note that some libraries in this template, such as
-`@tma.js/sdk`, are not intended for use outside of Telegram.
-
-Nevertheless, they appear to function properly. This is because the
-`src/mockEnv.ts` file, which is imported in the application's entry point (
-`src/index.ts`), employs the `mockTelegramEnv` function to simulate the Telegram
-environment. This trick convinces the application that it is running in a
-Telegram-based environment. Therefore, be cautious not to use this function in
-production mode unless you fully understand its implications.
-
-> [!WARNING]
-> Because we are using self-signed SSL certificates, the Android and iOS
-> Telegram applications will not be able to display the application. These
-> operating systems enforce stricter security measures, preventing the Mini App
-> from loading. To address this issue, refer to
-> [this guide](https://docs.telegram-mini-apps.com/platform/getting-app-link#remote).
-
-## Deploy
-
-This boilerplate uses GitHub Pages as the way to host the application
-externally. GitHub Pages provides a CDN which will let your users receive the
-application rapidly. Alternatively, you could use such services
-as [Heroku](https://www.heroku.com/) or [Vercel](https://vercel.com).
-
-### Manual Deployment
-
-This boilerplate uses the [gh-pages](https://www.npmjs.com/package/gh-pages)
-tool, which allows deploying your application right from your PC.
-
-#### Configuring
-
-Before running the deployment process, ensure that you have done the following:
-
-1. Replaced the `homepage` value in `package.json`. The GitHub Pages deploy tool
-   uses this value to
-   determine the related GitHub project.
-2. Replaced the `base` value in `vite.config.ts` and have set it to the name of
-   your GitHub
-   repository. Vite will use this value when creating paths to static assets.
-
-For instance, if your GitHub username is `telegram-mini-apps` and the repository
-name is `is-awesome`, the value in the `homepage` field should be the following:
-
-```json
-{
-  "homepage": "https://telegram-mini-apps.github.io/is-awesome"
-}
-```
-
-And `vite.config.ts` should have this content:
-
-```ts
-export default defineConfig({
-  base: '/is-awesome/',
-  // ...
+  // override the default compile
+  onCompile: function(exhbs, source, filename) {
+    var options;
+    if (filename && filename.indexOf('partials') > -1) {
+      options = {preventIndent: true};
+    }
+    return exhbs.handlebars.compile(source, options);
+  }
 });
 ```
 
-You can find more information on configuring the deployment in the `gh-pages`
-[docs](https://github.com/tschaub/gh-pages?tab=readme-ov-file#github-pages-project-sites).
+## Syntax
 
-#### Before Deploying
+To mark where a layout should insert page content:
 
-Before deploying the application, make sure that you've built it and going to
-deploy the fresh static files:
+    {{{body}}}
 
-```bash
-npm run build
+To declare a block placeholder in a layout:
+
+    {{{block "pageScripts"}}}
+
+To define block content in a page:
+
+    {{#contentFor "pageScripts"}}
+      CONTENT HERE
+    {{/contentFor}}
+
+## Layouts
+
+There are three ways to use a layout, listed in precedence order:
+
+1.  Declarative within a page. Use handlebars comment
+
+        {{!< LAYOUT}}
+
+    Layout file resolution:
+
+        If path starts with '.'
+            LAYOUT is relative to template
+        Else If `layoutsDir` is set
+            LAYOUT is relative to `layoutsDir`
+        Else
+            LAYOUT from path.resolve(dirname(template), LAYOUT)
+
+2.  As an option to render
+
+    ⚠️ Passing user-controlled data into the `layout` option can read arbitrary
+    files unless `restrictLayoutsTo` confines layout resolution to a safe
+    directory. Do not call `res.render('index', req.query)` or similar without
+    setting `restrictLayoutsTo`.
+
+    ```js
+    res.render('veggies', {
+      title: 'My favorite veggies',
+      veggies: veggies,
+      layout: 'layout/veggie'
+    });
+    ```
+
+    This option also allows layout suppression, including the default layout and
+    template-declared layouts, by passing a falsey JavaScript value:
+
+    ```js
+    res.render('veggies', {
+      title: 'My favorite veggies',
+      veggies: veggies,
+      layout: null // render without using a layout template
+    });
+    ```
+
+    Layout file resolution:
+
+        If path starts with '.'
+            layout is relative to template
+        Else If `layoutsDir` is set
+            layout is relative to `layoutsDir`
+        Else
+            layout from path.resolve(viewsDir, layout)
+
+3.  Lastly, use `defaultLayout` if specified in hbs configuration options.
+
+Layouts can be nested: just include a declarative layout tag within any layout
+template to have its content included in the declared "parent" layout.  Be
+aware that too much nesting can impact performances, and stay away from
+infinite loops!
+
+## Helpers
+
+### Synchronous helpers
+
+```js
+hbs.registerHelper('link', function(text, options) {
+  var attrs = [];
+  for(var prop in options.hash) {
+    attrs.push(prop + '="' + options.hash[prop] + '"');
+  }
+  return new hbs.SafeString(
+    "<a " + attrs.join(" ") + ">" + text + "</a>"
+  );
+});
 ```
 
-Then, run the deployment process, using the `deploy` script:
-
-```Bash
-npm run deploy
+in markup
+```
+{{{link 'barc.com' href='http://barc.com'}}}
 ```
 
-After the deployment completed successfully, visit the page with data according
-to your username and repository name. Here is the page link example using the
-data mentioned above:
-https://telegram-mini-apps.github.io/is-awesome
+### Asynchronous helpers
 
-### GitHub Workflow
+```js
+hbs.registerAsyncHelper('readFile', function(filename, cb) {
+  fs.readFile(path.join(viewsDir, filename), 'utf8', function(err, content) {
+    cb(new hbs.SafeString(content));
+  });
+});
+```
 
-To simplify the deployment process, this template includes a
-pre-configured [GitHub workflow](.github/workflows/github-pages-deploy.yml) that
-automatically deploys the project when changes are pushed to the `master`
-branch.
+in markup
+```
+{{{readFile 'tos.txt'}}}
+```
 
-To enable this workflow, create a new environment (or edit the existing one) in
-the GitHub repository settings and name it `github-pages`. Then, add the
-`master` branch to the list of deployment branches.
 
-You can find the environment settings using this
-URL: `https://github.com/{username}/{repository}/settings/environments`.
+## i18n support
 
-![img.png](.github/deployment-branches.png)
+Express-hbs supports [i18n](https://github.com/mashpie/i18n-node)
 
-In case, you don't want to do it automatically, or you don't use GitHub as the
-project codebase, remove the `.github` directory.
+```js
+var i18n = require('i18n');
 
-### GitHub Web Interface
+// minimal config
+i18n.configure({
+    locales: ['en', 'fr'],
+    cookie: 'locale',
+    directory: __dirname + "/locales"
+});
 
-Alternatively, developers can configure automatic deployment using the GitHub
-web interface. To do this, follow the link:
-`https://github.com/{username}/{repository}/settings/pages`.
+app.engine('hbs', hbs.express3({
+    // ... options from above
+    i18n: i18n,  // registers __ and __n helpers
+}));
+app.set('view engine', 'hbs');
+app.set('views', viewsDir);
 
-## TON Connect
+// cookies are needed
+app.use(express.cookieParser());
 
-This boilerplate utilizes
-the [TON Connect](https://docs.ton.org/develop/dapps/ton-connect/overview)
-project to demonstrate how developers can integrate functionality related to TON
-cryptocurrency.
+// init i18n module
+app.use(i18n.init);
+```
 
-The TON Connect manifest used in this boilerplate is stored in the `public`
-folder, where all publicly accessible static files are located. Remember
-to [configure](https://docs.ton.org/develop/dapps/ton-connect/manifest) this
-file according to your project's information.
+## Engine Instances
 
-## Useful Links
+Create isolated engine instances with their own cache system and handlebars engine.
 
-- [Platform documentation](https://docs.telegram-mini-apps.com/)
-- [@tma.js/sdk-react documentation](https://docs.telegram-mini-apps.com/packages/tma-js-sdk-react)
-- [Telegram developers community chat](https://t.me/devs_cis)
+```js
+var hbs = require('express-hbs');
+var instance1 = hbs.create();
+var instance2 = hbs.create();
+```
+
+## Template options
+
+The main use case for template options is setting the Handlebars `data` object,
+which creates global template variables accessible with an `@` prefix.
+
+Template options can be passed when creating an engine instance, updated with
+`updateTemplateOptions(templateOptions)`, or set for one request with
+`updateLocalTemplateOptions(locals, templateOptions)` on `res.locals`.
+
+Both of these methods have a companion method `getTemplateOptions()` and `getLocalTemplateOptions(locals)`, which should be used when extending or merging the current options.
+
+## Example
+
+in File `app.js`
+
+```js
+// http://expressjs.com/api.html#app.locals
+app.locals({
+    'PROD_MODE': 'production' === app.get('env')
+});
+
+```
+
+File `views/layout/default.hbs`
+
+```html
+<html>
+  <head>
+    <title>{{title}}</title>
+    <link type="text/css" rel="stylesheet" href="/css/style.css"/>
+    {{{block "pageStyles"}}}
+  </head>
+  <body>
+    {{{body}}}
+
+    {{> scripts}}
+
+    {{#if PROD_MODE}}
+    {{{block 'googleAnalyticsScripts'}}}
+    {{/if}}
+
+  </body>
+</html>
+```
+
+
+File `views/index.hbs`
+
+```html
+{{!< default}}
+
+{{#contentFor 'pageStyles'}}
+<style>
+  .clicker {
+    color: blue;
+  };
+</style>
+{{/contentFor}}
+
+<h1>{{title}}</h1>
+<p class="clicker">Click me!</p>
+```
+
+To run example project
+
+```sh
+pnpm install
+node example/app.js
+```
+
+The example server listens on <http://localhost:3000>.
+
+## Testing
+
+Install dependencies and run the test suite:
+
+```sh
+pnpm install
+pnpm test
+```
+
+Useful maintainer commands:
+
+```sh
+pnpm lint          # oxlint plus oxfmt --check
+pnpm lint:fix      # apply safe lint fixes and formatting
+pnpm coverage      # mocha under nyc with enforced coverage thresholds
+```
+
+
+## Credits
+
+Inspiration and code from [donpark/hbs](https://github.com/donpark/hbs)
+
+Big thanks to all [CONTRIBUTORS](https://github.com/TryGhost/express-hbs/contributors)
+
+
+## License
+
+The MIT License (MIT)
+
+Copyright (c) 2012-2026 Barc, Inc., Ghost Foundation - Released under the [MIT license](LICENSE).
