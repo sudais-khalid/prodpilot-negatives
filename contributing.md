@@ -1,17 +1,18 @@
-Purpose and Goal
+# Contributing
 
-This list is meant to provide a reference to all widgets and resources related to React Vite Admin.
-Contribution Guidelines
+Thanks for taking the time to improve this project.
 
-Please ensure your pull request adheres to the following guidelines:
+## Before You Start
 
-    Search previous suggestions for duplicates before making a new one.
-    Make an individual pull request for each suggestion.
-    Use the following format: - [Bookmark Title](link): Description.
-    Titles should be capitalized.
-    New categories or improvements to the existing categorization are welcome.
-    Make sure your text editor is set to remove trailing whitespace.
-    Check your spelling and grammar.
-    Do send a Pull Request.
+- Search existing issues and discussions before opening a new thread.
+- Use issues for bugs and actionable feature requests.
+- Use discussions for questions, ideas, and usage examples.
+- Do not open public issues for security problems; follow `SECURITY.md` instead.
 
-Thank you for your suggestions!
+## Pull Requests
+
+Keep pull requests focused and easy to review. Include a short summary, note user-facing changes, and mention any tests or checks you ran. If a change affects setup or behavior, update the README or relevant docs.
+
+## Development
+
+Follow the setup instructions in the README. Prefer small, clear changes over broad rewrites. When possible, add or update tests for behavior changes.
