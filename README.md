@@ -1,579 +1,184 @@
-# express-rest-api-boilerplate
+# HPP
 
-> Express REST API with JWT Authentication and support for sqlite, mysql, and postgresql
+[Express](http://expressjs.com) middleware to **protect against HTTP Parameter Pollution attacks**
 
-- authentication via [JWT](https://jwt.io/)
-- routes mapping via [express-routes-mapper](https://github.com/aichbauer/express-routes-mapper)
-- support for [sqlite](https://www.sqlite.org/), [mysql](https://www.mysql.com/), and [postgresql](https://www.postgresql.org/)
-- environments for `development`, `testing`, and `production`
-- linting via [eslint](https://github.com/eslint/eslint)
-- integration tests running with [Jest](https://github.com/facebook/jest)
-- built with [npm sripts](#npm-scripts)
-- example for User model and User controller, with jwt authentication, simply type `npm i` and `npm start`
+[![Build Status](https://travis-ci.org/analog-nico/hpp.svg?branch=master)](https://travis-ci.org/analog-nico/hpp) [![Coverage Status](https://coveralls.io/repos/analog-nico/hpp/badge.png)](https://coveralls.io/r/analog-nico/hpp?branch=master) [![Dependency Status](https://david-dm.org/analog-nico/hpp.svg)](https://david-dm.org/analog-nico/hpp)
 
-## Table of Contents
+## Why?
 
-- [Install & Use](#install-and-use)
-- [Folder Structure](#folder-structure)
-- [Controllers](#controllers)
-  - [Create a Controller](#create-a-controller)
-- [Models](#models)
-  - [Create a Model](#create-a-model)
-- [Policies](#policies)
-  - [auth.policy](#authpolicy)
-- [Services](#services)
-- [Config](#config)
-  - [Connection and Database](#connection-and-database)
-- [Routes](#routes)
-  - [Create Routes](#create-routes)
-- [Test](#test)
-  - [Setup](#setup)
-- [npm Scripts](#npm-scripts)
+Let [Chetan Karande's slides](https://speakerdeck.com/ckarande/top-overlooked-security-threats-to-node-dot-js-web-applications?slide=48) do the explaining:
 
-## Install and Use
+[![Slide 48](img/slide48.jpg)](https://speakerdeck.com/ckarande/top-overlooked-security-threats-to-node-dot-js-web-applications?slide=48)
+[![Slide 49](img/slide49.jpg)](https://speakerdeck.com/ckarande/top-overlooked-security-threats-to-node-dot-js-web-applications?slide=49)
+[![Slide 50](img/slide50.jpg)](https://speakerdeck.com/ckarande/top-overlooked-security-threats-to-node-dot-js-web-applications?slide=50)
+[![Slide 54](img/slide54.jpg)](https://speakerdeck.com/ckarande/top-overlooked-security-threats-to-node-dot-js-web-applications?slide=54)
 
-Start by cloning this repository
+...and exploits may allow [bypassing the input validation](https://speakerdeck.com/ckarande/top-overlooked-security-threats-to-node-dot-js-web-applications?slide=57) or even result in [denial of service](https://speakerdeck.com/ckarande/top-overlooked-security-threats-to-node-dot-js-web-applications?slide=55).
 
-```sh
-# HTTPS
-$ git clone https://github.com/aichbauer/express-rest-api-boilerplate.git
+## And HPP solves this how exactly?
+
+HPP puts array parameters in `req.query` and/or `req.body` aside and just selects the last parameter value. You add the middleware and you are done.
+
+## Installation
+
+[![NPM Stats](https://nodei.co/npm/hpp.png?downloads=true)](https://npmjs.org/package/hpp)
+
+This is a module for node.js and io.js and is installed via npm:
+
+``` bash
+npm install hpp --save
 ```
 
-then
+## Getting Started
 
-```sh
-# cd into project root
-$ yarn
-# to use mysql
-$ yarn add mysql2
-# to use postgresql
-$ yarn add pg pg-hstore
-# start the api
-$ yarn start
+Add the HPP middleware like this:
+
+``` js
+// ...
+var hpp = require('hpp');
+
+// ...
+app.use(bodyParser.urlencoded()); // Make sure the body is parsed beforehand.
+
+app.use(hpp()); // <- THIS IS THE NEW LINE
+
+// Add your own middlewares afterwards, e.g.:
+app.get('/search', function (req, res, next) { /* ... */ });
+// They are safe from HTTP Parameter Pollution now.
 ```
 
-or
+## Details about `req.query`
 
-```sh
-# cd into project root
-$ npm i
-# to use mysql
-$ npm i mysql2 -S
-# to use postgresql
-$ npm i -S pg pg-hstore
-# start the api
-$ npm start
+By default all top-level parameters in `req.query` are checked for being an array. If a parameter is an array the array is moved to `req.queryPolluted` and `req.query` is assigned the last value of the array:
+
 ```
+GET /search?firstname=John&firstname=Alice&lastname=Doe
 
-sqlite is supported out of the box as it is the default.
+=>
 
-## Folder Structure
-
-This boilerplate has 4 main directories:
-
-- api - for controllers, models, services, etc.
-- config - for routes, database, etc.
-- db - this is only a dir for the sqlite db, the default for NODE_ENV development
-- test - using [Jest](https://github.com/facebook/jest)
-
-## Controllers
-
-### Create a Controller
-
-Controllers in this boilerplate have a naming convention: `ModelnameController.js` and uses an object factory pattern.
-To use a model inside of your controller you have to require it.
-We use [Sequelize](http://docs.sequelizejs.com/) as ORM, if you want further information read the [Docs](http://docs.sequelizejs.com/).
-
-Example Controller for all **CRUD** oparations:
-
-```js
-const Model = require('../models/Model');
-
-const ModelController = () => {
-  const create = async (req, res) => {
-    // body is part of a form-data
-    const { value } = req.body;
-
-    try {
-      const model = await Model.create({
-        key: value
-      });
-
-      if(!model) {
-        return res.status(400).json({ msg: 'Bad Request: Model not found' });
-      }
-
-      return res.status(200).json({ model });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
+req: {
+    query: {
+        firstname: 'Alice',
+        lastname: 'Doe',
+    },
+    queryPolluted: {
+        firstname: [ 'John', 'Alice' ]
     }
-  };
-
-  const getAll = async (req, res) => {
-    try {
-      const model = await Model.findAll();
-
-      if(!models){
-        return res.status(400).json({ msg: 'Bad Request: Models not found' });
-      }
-
-      return res.status(200).json({ models });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  const get = async (req, res) => {
-    // params is part of an url
-    const { id } = req.params;
-
-    try {
-      const model = await Model.findOne({
-        where: {
-          id,
-        },
-      });
-
-      if(!model) {
-        return res.status(400).json({ msg: 'Bad Request: Model not found' });
-      }
-
-      return res.status(200).json({ model });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  const update = async (req, res) => {
-    // params is part of an url
-    const { id } = req.params;
-
-    // body is part of form-data
-    const { value } = req.body;
-
-    try {
-      const model = await Model.findById(id);
-
-      if(!model) {
-        return res.status(400).json({ msg: 'Bad Request: Model not found' });
-      }
-
-      const updatedModel = await model.update({
-        key: value,
-      )};
-
-      return res.status(200).json({ updatedModel });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  const destroy = async (req, res) => {
-    // params is part of an url
-    const { id } = req.params;
-
-    try {
-      const model =  Model.findById(id);
-
-      if(!model) {
-        return res.status(400).json({ msg: 'Bad Request: Model not found' })
-      }
-
-      await model.destroy();
-
-      return res.status(200).json({ msg: 'Successfully destroyed model' });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  // IMPORTANT
-  // don't forget to return the functions
-  return {
-    create,
-    getAll,
-    get,
-    update,
-    destroy,
-  };
-};
-
-model.exports = ModelController;
-```
-
-## Models
-
-### Create a Model
-
-Models in this boilerplate have a naming convention: `Model.js` and uses [Sequelize](http://docs.sequelizejs.com/) to define our Models, if you want further information read the [Docs](http://docs.sequelizejs.com/).
-
-Example User Model:
-
-```js
-const Sequelize = require('sequelize');
-
-// for encrypting our passwords
-const bcryptSevice = require('../services/bcrypt.service');
-
-// the DB connection
-const sequelize = require('../../config/database');
-
-// hooks are functions that can run before or after a specific event
-const hooks = {
-  beforeCreate(user) {
-    user.password = bcryptSevice.password(user);
-  },
-};
-
-// naming the table in DB
-const tableName = 'users';
-
-// the actual model
-const User = sequelize.define('User', {
-  username: {
-    type: Sequelize.STRING,
-    unique: true,
-  },
-  password: {
-    type: Sequelize.STRING,
-  },
-}, { hooks, tableName });
-
-// instead of using instanceMethod
-// in sequelize > 4 we are writing the function
-// to the prototype object of our model.
-// as we do not want to share sensitive data, the password
-// field gets ommited before sending
-User.prototype.toJSON = function () {
-  const values = Object.assign({}, this.get());
-
-  delete values.password;
-
-  return values;
-};
-
-// IMPORTANT
-// don't forget to export the Model
-module.exports = User;
-```
-
-## Policies
-
-Policies are middleware functions that can run before hitting a apecific or more specified route(s).
-
-Example policy:
-
-Only allow if the user is marked as admin.
-
-> Note: this is not a secure example, only for presentation puposes
-
-```js
-module.exports = (req, res, next) => {
-  if(req.body.userrole === 'admin') {
-    // do some verification stuff
-    const verified = verifyAdmin(req.body.userid);
-
-    if(verified) {
-      return next();
-    }
-
-    return res.status(401).json({ msg: 'Unauthorized' });
-  }
-
-  return res.status(401).json({ msg: 'Unauthorized' });
-};
-```
-
-To use this policy on all routes that only admins are allowed:
-
-api.js
-
-```js
-const adminPolicy = require('./policies/admin.policy');
-
-app.all('/admin/*', (req, res, next) => adminPolicy(req,res,next));
-```
-
-Or for one specific route
-
-api.js
-
-```js
-const adminPolicy = require('./policies/admin.policy');
-
-app.get('/admin/myroute',
-  (req, res, next) => adminPolicy(req,res,next),
-  (req, res) => {
-  //do some fancy stuff
-});
-```
-
-## auth.policy
-
-The `auth.policy` checks wether a `JSON Web Token` ([further information](https://jwt.io/)) is send in the header of an request as `Authorization: Bearer [JSON Web Token]` or inside of the body of an request as `token: [JSON Web Token]`.
-The policy runs default on all api routes that are are prefixed with `/private`. To map multiple routes read the [docs](https://github.com/aichbauer/express-routes-mapper/blob/master/README.md) from `express-routes-mapper`.
-
-To use this policy on all routes of a specific prefix:
-
-app.js
-
-```js
-app.use('/prefix', yourRoutes);
-app.all('/prefix', (req, res, next) => auth(req, res, next));
-```
-
-or to use this policy on one specific route:
-
-app.js
-
-```js
-app.get('/specificRoute',
-  (req, res, next) => auth(req, res, next),
-  (req, res) => {
-  // do some fancy stuff
-});
-```
-
-## Services
-
-Services are little useful snippets, or calls to another API that are not the main focus of your API.
-
-Example service:
-
-Get comments from another API:
-
-```js
-const commentService = () => {
-  const getComments = async () => {
-    try {
-      const res = await fetch('https://jsonplaceholder.typicode.com/comments', {
-        method: 'get'
-      });
-
-      // do some fancy stuff with the response
-    } catch (err) {
-      // handle a error
-    }
-  };
-
-  return {
-    getComments,
-  };
-};
-
-module.exports = commentService;
-```
-
-## Config
-
-Holds all the server configurations.
-
-## Connection and Database
-
-> Note: if you use msql make sure mysql server is running on the machine
-
-> Note: if you use postgres make sure postgres server is running on the machine
-
-This two files are the way to establish a connaction to a database.
-
-You only need to touch connection.js, default for `development` is sqlite, but it is easy as typing `mysql` or `postgres` to switch to another db.
-
-> Note: to run a mysql db install these package with: `yarn add mysql2` or `npm i mysql2 -S`
-
-> Note: to run a postgres db run these package with: `yarn add pg pg-hstore` or `npm i -S pg pg-hstore`
-
-Now simple configure the keys with your credentials.
-
-```js
-{
-  database: 'databasename',
-  username: 'username',
-  password: 'password',
-  host: 'localhost',
-  dialect: 'sqlite' || 'mysql' || 'postgres',
 }
 ```
 
-To not configure the production code.
+Checking `req.query` may be turned off by using `app.use(hpp({ checkQuery: false }))`.
 
-To start the DB, add the credentials for production. add `environment variables` by typing e.g. `export DB_USER=yourusername` before starting the api.
+## Details about `req.body`
 
-## Routes
+**Checking `req.body` is only done for requests with an urlencoded body. Not for json nor multipart bodies.**
 
-Here you define all your routes for your api. It doesn't matter how you structure them. By default they are mapped on `privateRoutes` and `publicRoutes`. You can define as much routes files as you want e.g. for every model or for specific use cases, e.g. normal user and admins.
+By default all top-level parameters in `req.body` are checked for being an array. If a parameter is an array the array is moved to `req.bodyPolluted` and `req.body` is assigned the last value of the array:
 
-## Create Routes
+```
+POST firstname=John&firstname=Alice&lastname=Doe
 
-For further information read the [docs](https://github.com/aichbauer/express-routes-mapper/blob/master/README.md) of express-routes-mapper.
+=>
 
-Example for User Model:
-
-> Note: Only supported Methods are **POST**, **GET**, **PUT**, and **DELETE**.
-
-userRoutes.js
-
-```js
-const userRoutes = {
-  'POST /user': 'UserController.create',
-  'GET /users': 'UserController.getAll',
-  'GET /user/:id': 'UserController.get',
-  'PUT /user/:id': 'UserController.update',
-  'DELETE /user/': 'UserController.destroy',
-};
-
-module.exports = userRoutes;
+req: {
+    body: {
+        firstname: 'Alice',
+        lastname: 'Doe',
+    },
+    bodyPolluted: {
+        firstname: [ 'John', 'Alice' ]
+    }
+}
 ```
 
-To use these routes in your application, require them in the config/index.js and export them.
+Checking `req.body` may be turned off by using `app.use(hpp({ checkBody: false }))`.
 
-```js
-const userRoutes = require('./userRoutes');
+## Whitelisting Specific Parameters
 
-const config = {
-  allTheOtherStuff,
-  userRoutes,
-};
+The `whitelist` option allows to specify parameters that shall not be touched by HPP. Usually specific parameters of a certain route are intentionally used as arrays. For that use the following approach that involves multiple HPP middlewares:
 
-module.exports = config;
+``` js
+// Secure all routes at first.
+// You could add separate HPP middlewares to each route individually but the day will come when you forget to secure a new route.
+app.use(hpp());
+
+// Add a second HPP middleware to apply the whitelist only to this route.
+app.use('/search', hpp({ whitelist: [ 'filter' ] }));
 ```
 
-api.js
+```
+GET /search?package=Helmet&package=HPP&filter=nodejs&filter=iojs
 
-```js
-const mappedUserRoutes = mapRoutes(config.userRoutes, 'api/controllers/');
+=>
 
-app.use('/prefix', mappedUserRoutes);
-
-// to protect them with authentication
-app.all('/prefix/*', (req, res, next) => auth(req, res, next));
+req: {
+    query: {
+        package: 'HPP',
+        filter:  [ 'nodejs', 'iojs' ], // Still an array
+    },
+    queryPolluted: {
+        package: [ 'Helmet', 'HPP' ]
+    }
+}
 ```
 
-## Test
+The whitelist works for both `req.query` and `req.body`.
 
-All test for this boilerplate uses [Jest](https://github.com/facebook/jest) and [supertest](https://github.com/visionmedia/superagent) for integration testing. So read their docs on further information.
+## Performance
 
-### Setup
+HPP was written with performance in mind since it eats CPU cycles for each request.
 
-The setup directory holds the `_setup.js` which holds `beforeAction` which starts a test express application and connects to your test database, and a `afterAction` which closes the db connection.
+A [performance test](test/spec/perf.js) that includes two HPP middlewares plus a whitelist simulates an already demanding use case. On my Mac Book Air it measures **0.002ms to process a single request**.
 
-### Controller
+## Contributing
 
-> Note: those request are asynchronous, we use `async await` syntax.
+To set up your development environment for HPP:
 
-> Note: As we don't use import statements inside the api we also use the require syntax for tests
+1. Clone this repo to your desktop,
+2. in the shell `cd` to the main folder,
+3. hit `npm install`,
+4. hit `npm install gulp -g` if you haven't installed gulp globally yet, and
+5. run `gulp dev`. (Or run `node ./node_modules/.bin/gulp dev` if you don't want to install gulp globally.)
 
-To test a Controller we create `fake requests` to our api routes.
+`gulp dev` watches all source files and if you save some changes it will lint the code and execute all tests. The test coverage report can be viewed from `./coverage/lcov-report/index.html`.
 
-Example `GET /user` from last example with prefix `prefix`:
+If you want to debug a test you should use `gulp test-without-coverage` to run all tests without obscuring the code by the test coverage instrumentation.
 
-```js
-const request = require('supertest');
-const {
-  beforeAction,
-  afterAction,
-} = require('../setup/_setup');
+## Change History
 
-let api;
+- v0.2.3 (2020-01-07)
+    - Updated lodash dependency because of vulnerability
+    - Added node v6, v8, v10 to CI build
+    - Removed node v5 from CI build
+- v0.2.2 (2017-04-11)
+    - Requiring individual lodash functions for faster boot time and lower memory footprint
+      *(Thanks to @mschipperheyn for suggesting this in [issue #6](https://github.com/analog-nico/hpp/issues/6))*
+- v0.2.1 (2016-04-03)
+    - Added node v4 and v5 to CI build
+    - Removed node v0.11 from CI build
+    - Updated dependencies
+- v0.2.0 (2015-05-25)
+    - Bumped version to 0.2 to properly follow semver since the whitelist was added in v0.1.2
+    - For better intuitiveness the last instead of the first value of an array is selected 
+    - Refactoring to improve readability and performance
+      *(Thanks to @le0nik for [pull request #2](https://github.com/analog-nico/hpp/pull/2))*
+    - Updated dependencies
+      *(Thanks to @maxrimue for [pull request #3](https://github.com/analog-nico/hpp/pull/3))*
+- v0.1.2 (2015-05-18)
+    - Added [whitelist feature](#whitelisting-specific-parameters)
+      *(Thanks to @avaly for suggesting this in [issue #1](https://github.com/analog-nico/hpp/issues/1))*
+	- Updated dependencies
+- v0.1.1 (2015-04-16)
+    - Removed two closures
+    - Updated lodash
+- v0.1.0 (2015-04-12)
+    - Updated dependencies
+    - Use in production satisfactory
+- v0.0.1 (2015-03-05)
+    - Initial version
 
-beforeAll(async () => {
-  api = await beforeAction();
-});
+## License (ISC)
 
-afterAll(() => {
-  afterAction();
-});
+In case you never heard about the [ISC license](http://en.wikipedia.org/wiki/ISC_license) it is functionally equivalent to the MIT license.
 
-test('test', async () => {
-  const token = 'this-should-be-a-valid-token';
-
-  const res = await request(api)
-    .get('/prefix/user')
-    .set('Accept', /json/)
-    // if auth is needed
-    .set('Authorization', `Bearer ${token}`)
-    .set('Content-Type', 'application/json')
-    .expect(200);
-
-  // read the docs of jest for further information
-  expect(res.body.user).toBe('something');
-});
-```
-
-### Models
-
-Are usually automatically tested in the integration tests as the Controller uses the Models, but you can test them separatly.
-
-## npm scripts
-
-There are no automation tool or task runner like [grunt](https://gruntjs.com/) or [gulp](http://gulpjs.com/) used for this boilerplate. These boilerplate only uses npm scripts for automatization.
-
-### npm start
-
-This is the entry for a developer. This command:
-
-By default it uses a sqlite databse, if you want to migrate the sqlite db by each start, disable the `prestart` and `poststart` command. Also mind if you are using a sqlite database to delete the `drop-sqlite-db` in the prepush hook.
-
-- runs **nodemon watch task** for the all files conected to `.api/api.js`
-- sets the **environment variable** `NODE_ENV` to `development`
-- opens the db connection for `development`
-- starts the server on 127.0.0.1:2017
-
-### npm test
-
-This command:
-
-- runs `npm run lint` ([eslint](http://eslint.org/)) with the [airbnb styleguide](https://github.com/airbnb/javascript) without arrow-parens rule for **better readability**
-- sets the **environment variable** `NODE_ENV` to `testing`
-- creates the `database.sqlite` for the test
-- runs `jest --coverage` for testing with [Jest](https://github.com/facebook/jest) and the coverage
-- drops the `database.sqlite` after the test
-
-## npm run production
-
-This command:
-
-- sets the **environment variable** to `production`
-- opens the db connection for `production`
-- starts the server on 127.0.0.1:2017 or on 127.0.0.1:PORT_ENV
-
-Before running on production you have to set the **environment vaiables**:
-
-- DB_NAME - database name for production
-- DB_USER - database username for production
-- DB_PASS - database password for production
-- DB_HOST - database host for production
-- JWT_SECERT - secret for json web token
-
-Optional:
-
-- PORT - the port your api on 127.0.0.1, default to 2017
-
-### other commands
-
-- `npm run dev` - simply start the server withou a watcher
-- `npm run create-sqlite-db` - creates the sqlite database
-- `npm run drop-sqlite-db` - drops **ONLY** the sqlite database
-- `npm run lint` - linting with [eslint](http://eslint.org/)
-- `npm run nodemon` - same as `npm start``
-- `npm run prepush` - a hook wich runs before pushing to a repository, runs `npm test` and `npm run dropDB`
-- `pretest` - runs linting before `npm test`
-- `test-ci` - only runs tests, nothing in pretest, nothing in posttest, for better use with ci tools
-
-## LICENSE
-
-MIT © Lukas Aichbauer
+See the [LICENSE file](LICENSE) for details.
