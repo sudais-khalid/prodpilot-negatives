@@ -1,11 +1,7 @@
 language: node_js
 node_js:
-    - "18"
-notifications:
-    email: false
-before_install:
-    - npm install prom-client
-script:
-    - npm run lint
-    - npm test
-    - npm run test-types
+  - "0.10"
+env:
+  - NODE_ENV=travis
+services:
+  - mongodb

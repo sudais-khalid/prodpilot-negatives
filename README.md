@@ -1,297 +1,89 @@
-[![build status](https://travis-ci.org/jochen-schweizer/express-prom-bundle.png)](https://travis-ci.org/jochen-schweizer/express-prom-bundle) [![Coverage Status](https://coveralls.io/repos/github/jochen-schweizer/express-prom-bundle/badge.svg?branch=master)](https://coveralls.io/github/jochen-schweizer/express-prom-bundle?branch=master) [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://www.tldrlegal.com/l/mit) [![NPM version](https://badge.fury.io/js/express-prom-bundle.png)](http://badge.fury.io/js/express-prom-bundle)
+MEAN Stack Relational ![Mean Stack Build Status](https://travis-ci.org/jpotts18/mean-stack-relational.png)
+=====================
 
-# express prometheus bundle
+### Please use for reference only! No support or updates planned.
 
-Express middleware with popular prometheus metrics in one bundle. It's also compatible with koa v1 and v2 (see below).
+The main idea for this repository is shamelessly stolen from [http://mean.io](http://mean.io). It says:
 
-This library uses **prom-client v15+** as a peer dependency. See: https://github.com/siimon/prom-client
+> MEAN is a boilerplate that provides a nice starting point for [MySQL], Express, Node.js, and AngularJS based applications. It is designed to give you quick and organized way to start developing of MEAN based web apps with useful modules like sequelize and passport pre-bundled and configured. We mainly try to take care of the connection points between existing popular frameworks and solve common integration problems.
 
-If you need a support for older versions of prom-client (v12-v14), downgrade to express-prom-bundle v6.6.0
 
-Included metrics:
+The MongoDB ORM, [Mongoose](http://mongoosejs.com/), has been replaced with [Sequelize](http://sequelizejs.com/). Switching from mongoose to sequelize allows developers easy access to MySQL, MariaDB, SQLite or PostgreSQL databases by mapping database entries to objects and vice versa.
 
-* `up`: normally is just 1
-* `http_request_duration_seconds`: http latency histogram/summary labeled with `status_code`, `method` and `path`
+[Addy Osmani's Blog](http://addyosmani.com/blog/full-stack-javascript-with-mean-and-yeoman/) explains SQL databases, being strongly typed in nature are great at enforcing a level of consistency, ensuring many kinds of bad data simply don’t get recorded. By using SQL databases MEAN Stack Relational favors reliability over the performance gains of NoSQL databases.
 
-## Install
+# Demo
 
-```
-npm install prom-client express-prom-bundle
-```
+Deploy to your Heroku account for a demo:
 
-## Sample Usage
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-```javascript
-const promBundle = require("express-prom-bundle");
-const app = require("express")();
-const metricsMiddleware = promBundle({includeMethod: true});
+Note: Deploy from main repository view to avoid missing app.json error.
 
-app.use(metricsMiddleware);
-app.use(/* your middleware */);
-app.listen(3000);
-```
+# Getting Started
 
-* call your endpoints
-* see your metrics here: [http://localhost:3000/metrics](http://localhost:3000/metrics)
+Alright now the fun begins. First clone or download the repo to your computer. 
 
-**ALERT!**
+1. Clone the repository ```git clone git@github.com:jpotts18/mean-stack-relational.git```.
+1. Go into the repository ```cd mean-stack-relational/```.
+1. Install dependencies with NPM ```npm install```. This will copy development.json5, and production.json5 from respective sample files in the config/env folder and run the grunt copy task to copy frontend lib files to their destination.
+1. Plug in your private and public keys for working with FB and Twitter into ```/config/env/development.json5``` and/or ```/config/env/production.json5```.
+1. Wire up the database connection found in ```/config/env/development.json5``` and/or ```/config/env/production.json5```.
+1. Run in production mode with: ```pm2 start pm2-ecosystem.json --env production``` (Run ```sudo npm install -g pm2``` if it's not installed.), or
+1. Run in development mode with grunt: ```grunt```
+1. Make something awesome!
 
-The order in which the routes are registered is important, since
-**only the routes registered after the express-prom-bundle will be measured**
+Thats all! Now go and open up your browser at [http://localhost:3000](http://localhost:3000), and tweet [@jpotts18](http://twitter.com/jpotts18) to say thanks!
 
-You can use this to your advantage to bypass some of the routes.
-See the example below.
 
-## Options
+## Prerequisites
+- Node.js - Download and Install Node.js. You can also follow [this gist](https://gist.github.com/isaacs/579814) for a quick and easy way to install Node.js and npm
+- MySQL - Download and Install MySQL - Make sure it's running on the default port (3306).
 
-Which labels to include in `http_request_duration_seconds` metric:
+### Tool Prerequisites
+- NPM - Node.js package manager, should be installed when you install node.js. NPM (Node Package Manager) will look at the [package.json](https://github.com/jpotts18/mean-stack-relational/blob/master/package.json) file in the root of the project and download all of the necessary dependencies and put them in a folder called ```node_modules```
 
-* **includeStatusCode**: HTTP status code (200, 400, 404 etc.), default: **true**
-* **includeMethod**: HTTP method (GET, PUT, ...), default: **false**
-* **includePath**: URL path (see important details below), default: **false**
-* **customLabels**: an object containing extra labels, e.g. ```{project_name: 'hello_world'}```.
-  Most useful together with **transformLabels** callback, otherwise it's better to use native Prometheus relabeling.
-* **includeUp**: include an auxiliary "up"-metric which always returns 1, default: **true**
-* **metricsPath**: replace the `/metrics` route with a **regex** or exact **string**. Note: it is highly recommended to just stick to the default
-* **metricType**: histogram/summary selection. See more details below
-* **httpDurationMetricName**: Allows you change the name of HTTP duration metric, default: **`http_request_duration_seconds`**.
+- Bower - Web package manager, installing Bower is simple when you have npm:
+``` npm install -g bower ```
 
-### metricType option ###
+### NPM Modules Used
+- [Passport](http://passportjs.org/) - Passport is authentication middleware for Node.js. Extremely flexible and modular, Passport can be unobtrusively dropped in to any Express-based web application. A comprehensive set of strategies support authentication using a username and password, Facebook, Twitter, and more. 
+- [Express](http://expressjs.com/) - Express is a minimal and flexible node.js web application framework, providing a robust set of features for building single and multi-page, and hybrid web applications.
+- [Sequelize](http://sequelizejs.com/) - The Sequelize library provides easy access to MySQL, MariaDB, SQLite or PostgreSQL databases by mapping database entries to objects and vice versa. To put it in a nutshell, it's an ORM (Object-Relational-Mapper). The library is written entirely in JavaScript and can be used in the Node.JS environment. 
 
-Two metric types are supported for `http_request_duration_seconds` metric:
-* [histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) (default)
-* [summary](https://prometheus.io/docs/concepts/metric_types/#summary)
+### Javascript Tools Used
+- [Grunt](http://gruntjs.com/) - In one word: automation. The less work you have to do when performing repetitive tasks like minification, compilation, unit testing, linting, etc, the easier your job becomes. After you've configured it, a Grunt can do most of that mundane work for you—and your team—with basically zero effort.
 
-Additional options for **histogram**:
-* **buckets**: buckets used for the `http_request_duration_seconds` histogram
+  1. It [watches](https://github.com/jpotts18/mean-stack-relational/blob/master/gruntfile.js#L5) your filesystem and when it detects a change it will livereload your changes. 
 
-Additional options for **summary**:
-* **percentiles**: percentiles used for `http_request_duration_seconds` summary
-* **ageBuckets**: ageBuckets configures how many buckets we have in our sliding window for the summary
-* **maxAgeSeconds**: the maxAgeSeconds will tell how old a bucket can be before it is reset
-* **pruneAgedBuckets**: When enabled, timed out buckets will be removed entirely. By default, buckets are reset to 0.
+  2. It runs [jshint](https://github.com/jpotts18/mean-stack-relational/blob/master/gruntfile.js#L32) which looks through your javascript files and ensures coding standards.
 
-### Transformation callbacks ###
+  3. It runs [nodemon](https://github.com/jpotts18/mean-stack-relational/blob/master/gruntfile.js#L35) which watches changes in specific folders and recompiles the app when necessary. No running ```node app.js``` every 2 minutes. 
 
-* **normalizePath**: `function(req)`  or `Array`
-  * if function is provided, then it should generate path value from express `req`
-  * if array is provided, then it should be an array of tuples `[regex, replacement]`. The `regex` can be a string and is automatically converted into JS regex.
-  * ... see more details in the section below
-* **urlValueParser**: options passed when instantiating [url-value-parser](https://github.com/disjunction/url-value-parser).
-  This is the easiest way to customize which parts of the URL should be replaced with "#val".
-  See the [docs](https://github.com/disjunction/url-value-parser) of url-value-parser module for details.
-* **formatStatusCode**: `function(res)` producing final status code from express `res` object, e.g. you can combine `200`, `201` and `204` to just `2xx`.
-* **transformLabels**: `function(labels, req, res)` transforms the **labels** object, e.g. setting dynamic values to **customLabels**
-* **urlPathReplacement**: replacement string for the values (default: "#val")
+  4. It can also run tests like mocha and karma for you.
 
-### Other options ###
+- [Bower](http://bower.io/) - Bower is a package manager for the web. It offers a generic, unopinionated solution to the problem of front-end package management, while exposing the package dependency model via an API that can be consumed by a more opinionated build stack. There are no system wide dependencies, no dependencies are shared between different apps, and the dependency tree is flat.
 
-* **autoregister**: if `/metrics` endpoint should be registered (default: **true**)
-* **promClient**: options for promClient startup, e.g. **collectDefaultMetrics**. This option was added
-  to keep `express-prom-bundle` runnable using confit (e.g. with kraken.js) without writing any JS code,
-  see [advanced example](https://github.com/jochen-schweizer/express-prom-bundle/blob/master/advanced-example.js)
-* **promRegistry**: Optional `promClient.Registry` instance to attach metrics to. Defaults to global `promClient.register`.
-* **metricsApp**: Allows you to attach the metrics endpoint to a different express app. You probably want to use it in combination with `autoregister: false`.
-* **bypass**: An object that takes onRequest and onFinish callbacks that determines whether the given request should be excluded in the metrics. Default:
+### Front-End Tools Used
+- [Angular.js](http://angularjs.org) - AngularJS is an open-source JavaScript framework, maintained by Google, that assists with running single-page applications. Its goal is to augment browser-based applications with model–view–controller (MVC) capability, in an effort to make both development and testing easier.
+- [Twitter Bootstrap](http://getbootstrap.com/) - Sleek, intuitive, and powerful mobile first front-end framework for faster and easier web development.
+- [UI Bootstrap](http://angular-ui.github.io/bootstrap/) - Bootstrap components written in pure AngularJS by the AngularUI Team
 
-  ```js
-  {
-    onRequest: (req) => false,
-    onFinish: (req, res) => false
-  }
-  ```
+# Project Roadmap
 
-  `onRequest` is run directly in the middleware chain, before the request is processed. `onFinish` is run after the request has been processed, and has access to the express response object in addition to the request object. Both callbacks are optional, and if one or both returns true the request is excluded.
+Following is a list of items detailing future direction for MEAN Stack Relational:
 
-  As a shorthand, just the onRequest callback can be used instead of the object.
+## Purpose
+- Demonstrate several login strategies using passport.js
+- Demonstrate environment configuration best practices
+- Demonstrate how to use Sequelize to query a single table and to accomplish a join.
 
+## Additions
+- Demonstrate testing for Express routes and javascript classes using Mocha, Sinon, Proxyquire and more
+- Demonstrating modularity by using javascript classes for complex backend functionality
+- Yeoman generator to compete with MEAN
 
-### More details on includePath option
 
-Let's say you want to have  latency statistics by URL path,
-e.g. separate metrics for `/my-app/user/`, `/products/by-category` etc.
+# Troubleshooting and Contact
 
-Just taking `req.path` as a label value won't work as IDs are often part of the URL,
-like `/user/12352/profile`. So what we actually need is a path template.
-The module tries to figure out what parts of the path are values or IDs,
-and what is an actual path. The example mentioned before would be
-normalized to `/user/#val/profile` and that will become the value for the label.
-These conversions are handled by `normalizePath` function.
-
-You can extend this magical behavior by providing
-additional RegExp rules to be performed,
-or override `normalizePath` with your own function.
-
-#### Example 1 (add custom RegExp):
-
-```javascript
-app.use(promBundle({
-  normalizePath: [
-    // collect paths like "/customer/johnbobson" as just one "/custom/#name"
-    ['^/customer/.*', '/customer/#name'],
-
-    // collect paths like "/bobjohnson/order-list" as just one "/#name/order-list"
-    ['^.*/order-list', '/#name/order-list']
-  ],
-  urlValueParser: {
-    minHexLength: 5,
-    extraMasks: [
-      'ORD[0-9]{5,}' // replace strings like ORD1243423, ORD673562 as #val
-    ]
-  }
-}));
-```
-
-#### Example 2 (override normalizePath function):
-
-```javascript
-app.use(promBundle(/* options? */));
-
-// let's reuse the existing one and just add some
-// functionality on top
-const originalNormalize = promBundle.normalizePath;
-promBundle.normalizePath = (req, opts) => {
-  const path = originalNormalize(req, opts);
-  // count all docs as one path, but /docs/login as a separate one
-  return (path.match(/^\/docs/) && !path.match(/^\/login/)) ? '/docs/*' : path;
-};
-```
-
-For more details:
- * [url-value-parser](https://www.npmjs.com/package/url-value-parser) - magic behind automatic path normalization
- * [normalizePath.js](https://github.com/jochen-schweizer/express-prom-bundle/blob/master/src/normalizePath.js) - source code for path processing
-
-
-#### Example 3 (return express route definition):
-
-```javascript
-app.use(promBundle(/* options? */));
-
-promBundle.normalizePath = (req, opts) => {
-  // Return the path of the express route (i.e. /v1/user/:id or /v1/timer/automated/:userid/:timerid")
-  return req.route?.path ?? "NULL";
-};
-```
-
-## express example
-
-setup std. metrics but exclude `up`-metric:
-
-```javascript
-const express = require("express");
-const app = express();
-const promBundle = require("express-prom-bundle");
-
-// calls to this route will not appear in metrics
-// because it's applied before promBundle
-app.get("/status", (req, res) => res.send("i am healthy"));
-
-// register metrics collection for all routes
-// ... except those starting with /foo
-app.use("/((?!foo))*", promBundle({includePath: true}));
-
-// this call will NOT appear in metrics,
-// because express will skip the metrics middleware
-app.get("/foo", (req, res) => res.send("bar"));
-
-// calls to this route will appear in metrics
-app.get("/hello", (req, res) => res.send("ok"));
-
-app.listen(3000);
-```
-
-See an [advanced example on github](https://github.com/jochen-schweizer/express-prom-bundle/blob/master/advanced-example.js)
-
-## koa v2 example
-
-```javascript
-const promBundle = require("express-prom-bundle");
-const Koa = require("koa");
-const c2k = require("koa-connect");
-const metricsMiddleware = promBundle({/* options */ });
-
-const app = new Koa();
-
-app.use(c2k(metricsMiddleware));
-app.use(/* your middleware */);
-app.listen(3000);
-```
-
-## using with cluster
-
-You'll need to use an additional **clusterMetrics()** middleware.
-
-In the example below the master process will expose an API with a single endpoint `/metrics`
-which returns an aggregate of all metrics from all the workers.
-
-``` javascript
-const cluster = require('cluster');
-const promBundle = require('express-prom-bundle');
-const promClient = require('prom-client');
-const numCPUs = Math.max(2, require('os').cpus().length);
-const express = require('express');
-
-if (cluster.isMaster) {
-    for (let i = 1; i < numCPUs; i++) {
-        cluster.fork();
-    }
-
-    const metricsApp = express();
-    metricsApp.use('/metrics', promBundle.clusterMetrics());
-    metricsApp.listen(9999);
-
-    console.log('cluster metrics listening on 9999');
-    console.log('call localhost:9999/metrics for aggregated metrics');
-} else {
-    new promClient.AggregatorRegistry();
-    const app = express();
-    app.use(promBundle({
-        autoregister: false, // disable /metrics for single workers
-        includeMethod: true
-    }));
-    app.use((req, res) => res.send(`hello from pid ${process.pid}\n`));
-    app.listen(3000);
-    console.log(`worker ${process.pid} listening on 3000`);
-}
-```
-
-## using with kraken.js
-
-Here is meddleware config sample, which can be used in a standard **kraken.js** application.
-In this case the stats for URI paths and HTTP methods are collected separately,
-while replacing all HEX values starting from 5 characters and all IP addresses in the path as #val.
-
-```json
-{
-  "middleware": {
-    "expressPromBundle": {
-      "route": "/((?!status|favicon.ico|robots.txt))*",
-      "priority": 0,
-      "module": {
-        "name": "express-prom-bundle",
-        "arguments": [
-          {
-            "includeMethod": true,
-            "includePath": true,
-            "buckets": [0.1, 1, 5],
-            "promClient": {
-              "collectDefaultMetrics": {
-              }
-            },
-            "urlValueParser": {
-              "minHexLength": 5,
-              "extraMasks": [
-                "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$"
-              ]
-            }
-          }
-        ]
-      }
-    }
-  }
-}
-```
-
-## License
-
-MIT
+During install some of you may encounter some issues feel free to contact me (jpotts18) or the co-contributor (chaudhryjunaid), via the repository issue tracker or the links provided below. I am also available on twitter at [@jpotts18](http://twitter.com/jpotts18) and Junaid at [@chjunaidanwar](http://twitter.com/chjunaidanwar).
