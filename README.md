@@ -1,89 +1,146 @@
-# React + Vite + TypeScript Template (react-vite-ui)
+## Express rate-limiter
+Rate limiting middleware for Express applications built on redis
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Dan5py/react-vite-ui/blob/main/LICENSE)
-
-A React + Vite template powered by shadcn/ui.
-
-> [!NOTE]
-> This template uses Tailwind v3, if you want to use Tailwind v4, check the [tw4 branch](https://github.com/dan5py/react-vite-shadcn-ui/tree/tw4).
-
-## 🎉 Features
-
-- **React** - A JavaScript library for building user interfaces.
-- **Vite** - A fast, opinionated frontend build tool.
-- **TypeScript** - A typed superset of JavaScript that compiles to plain JavaScript.
-- **Tailwind CSS** - A utility-first CSS framework. (`v4`)
-- **Tailwind Prettier Plugin** - A Prettier plugin for formatting Tailwind CSS classes.
-- **ESLint** - A pluggable linting utility for JavaScript and TypeScript.
-- **PostCSS** - A tool for transforming CSS with JavaScript.
-- **Autoprefixer** - A PostCSS plugin to parse CSS and add vendor prefixes.
-- **shadcn/ui** - Beautifully designed components that you can copy and paste into your apps.
-
-## ⚙️ Prerequisites
-
-Make sure you have the following installed on your development machine:
-
-- Node.js (version 24 or above)
-- pnpm (package manager)
-
-## 🚀 Getting Started
-
-Follow these steps to get started with the react-vite-ui template:
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/dan5py/react-vite-ui.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-   cd react-vite-ui
-   ```
-
-3. Install the dependencies:
-
-   ```bash
-   pnpm install
-   ```
-
-4. Start the development server:
-
-   ```bash
-   pnpm dev
-   ```
-
-## 📜 Available Scripts
-
-- pnpm dev - Starts the development server.
-- pnpm build - Builds the production-ready code.
-- pnpm lint - Runs ESLint to analyze and lint the code.
-- pnpm preview - Starts the Vite development server in preview mode.
-
-## 📂 Project Structure
-
-The project structure follows a standard React application layout:
-
-```python
-react-vite-ui/
-  ├── node_modules/      # Project dependencies
-  ├── public/            # Public assets
-  ├── src/               # Application source code
-  │   ├── components/    # React components
-  │   │   └── ui/        # shadc/ui components
-  │   ├── styles/        # CSS stylesheets
-  │   ├── lib/           # Utility functions
-  │   ├── App.tsx        # Application entry point
-  │   └── index.tsx      # Main rendering file
-  ├── eslint.config.js     # ESLint configuration
-  ├── index.html         # HTML entry point
-  ├── postcss.config.js  # PostCSS configuration
-  ├── tailwind.config.ts # Tailwind CSS configuration
-  ├── tsconfig.json      # TypeScript configuration
-  └── vite.config.ts     # Vite configuration
+``` sh
+npm install express-limiter --save
 ```
 
-## 📄 License
+``` js
+var express = require('express')
+var app = express()
+var client = require('redis').createClient()
 
-This project is licensed under the MIT License. See the [LICENSE](https://choosealicense.com/licenses/mit/) file for details.
+var limiter = require('express-limiter')(app, client)
+
+/**
+ * you may also pass it an Express 4.0 `Router`
+ *
+ * router = express.Router()
+ * limiter = require('express-limiter')(router, client)
+ */
+
+limiter({
+  path: '/api/action',
+  method: 'get',
+  lookup: ['connection.remoteAddress'],
+  // 150 requests per hour
+  total: 150,
+  expire: 1000 * 60 * 60
+})
+
+app.get('/api/action', function (req, res) {
+  res.send(200, 'ok')
+})
+```
+
+### API options
+
+``` js
+limiter(options)
+```
+
+ - `path`: `String` *optional* route path to the request
+ - `method`: `String` *optional* http method. accepts `get`, `post`, `put`, `delete`, and of course Express' `all`
+ - `lookup`: `Function|String|Array.<String>` value lookup on the request object. Can be a single value, array or function. See [examples](#examples) for common usages
+ - `total`: `Number` allowed number of requests before getting rate limited
+ - `expire`: `Number` amount of time in `ms` before the rate-limited is reset
+ - `whitelist`: `function(req)` optional param allowing the ability to whitelist. return `boolean`, `true` to whitelist, `false` to passthru to limiter.
+ - `skipHeaders`: `Boolean` whether to skip sending HTTP headers for rate limits ()
+ - `ignoreErrors`: `Boolean` whether errors generated from redis should allow the middleware to call next().  Defaults to false.
+ - `onRateLimited`: `Function` called when a request exceeds the configured rate limit.
+
+### Examples
+
+``` js
+// limit by IP address
+limiter({
+  ...
+  lookup: 'connection.remoteAddress'
+  ...
+})
+
+// or if you are behind a trusted proxy (like nginx)
+limiter({
+  lookup: 'headers.x-forwarded-for'
+})
+
+// by user (assuming a user is logged in with a valid id)
+limiter({
+  lookup: 'user.id'
+})
+
+// limit your entire app
+limiter({
+  path: '*',
+  method: 'all',
+  lookup: 'connection.remoteAddress'
+})
+
+// limit users on same IP
+limiter({
+  path: '*',
+  method: 'all',
+  lookup: ['user.id', 'connection.remoteAddress']
+})
+
+// whitelist user admins
+limiter({
+  path: '/delete/thing',
+  method: 'post',
+  lookup: 'user.id',
+  whitelist: function (req) {
+    return !!req.user.is_admin
+  }
+})
+
+// skip sending HTTP limit headers
+limiter({
+  path: '/delete/thing',
+  method: 'post',
+  lookup: 'user.id',
+  whitelist: function (req) {
+    return !!req.user.is_admin
+  },
+  skipHeaders: true
+})
+
+// call a custom limit handler
+limiter({
+  path: '*',
+  method: 'all',
+  lookup: 'connection.remoteAddress',
+  onRateLimited: function (req, res, next) {
+    next({ message: 'Rate limit exceeded', status: 429 })
+  }
+})
+
+// with a function for dynamic-ness
+limiter({
+  lookup: function(req, res, opts, next) {
+    if (validApiKey(req.query.api_key)) {
+      opts.lookup = 'query.api_key'
+      opts.total = 100
+    } else {
+      opts.lookup = 'connection.remoteAddress'
+      opts.total = 10
+    }
+    return next()
+  }
+})
+
+```
+
+### as direct middleware
+
+``` js
+app.post('/user/update', limiter({ lookup: 'user.id' }), function (req, res) {
+  User.find(req.user.id).update(function (err) {
+    if (err) next(err)
+    else res.send('ok')
+  })
+})
+```
+
+## License MIT
+
+Happy Rate Limiting!

@@ -1,42 +1,30 @@
 {
-  "name": "react-vite-ui",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "express-limiter",
+  "version": "1.6.1",
+  "description": "rate limiter middleware for express applications",
+  "main": "index.js",
+  "author": "Dustin Diaz",
+  "license": "MIT",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "test": "make test"
   },
-  "dependencies": {
-    "@radix-ui/react-slot": "^1.2.4",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.560.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "tailwindcss-animate": "^1.0.7"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ded/express-limiter.git"
   },
+  "bugs": {
+    "url": "https://github.com/ded/express-limiter/issues"
+  },
+  "homepage": "https://github.com/ded/express-limiter",
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@tailwindcss/vite": "^4.1.18",
-    "@types/node": "^24",
-    "@types/react": "^19.2",
-    "@types/react-dom": "^19.2",
-    "@vitejs/plugin-react": "^5.1.2",
-    "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
-    "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.1.18",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.49.0",
-    "vite": "^7.2.7"
-  },
-  "engines": {
-    "node": ">=24.0.0"
+    "express": "4.0.0",
+    "redis": "~0.10.1",
+    "mocha": "~1.18.2",
+    "chai": "~1.9.1",
+    "sinon": "~1.9.0",
+    "sinon-chai": "~2.5.0",
+    "supertest": "~0.10.0",
+    "valentine": "~2.0.2",
+    "jshint": "~2.5.0"
   }
 }
