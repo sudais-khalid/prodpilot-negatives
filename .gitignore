@@ -1,4 +1,8 @@
 node_modules
-.idea
+coverage
+*.log
+__diff_output__
 dist
-.eslintcache
+.cache
+index.d.ts
+.jest*
