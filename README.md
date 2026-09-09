@@ -1,55 +1,182 @@
-# create-react-app React Project with Node Express Backend
+# express-promise-router
 
-> Example on using create-react-app with a Node Express Backend
+[![npm version](https://badge.fury.io/js/express-promise-router.svg)](https://badge.fury.io/js/express-promise-router)
 
-## Usage
+A simple wrapper for Express 4's Router that allows middleware to return promises.
+This package makes it simpler to write route handlers for Express when dealing
+with promises by reducing duplicate code.
 
-Install [nodemon](https://github.com/remy/nodemon) globally
+## Getting Started
 
-```
-npm i nodemon -g
-```
+Install the module with npm
 
-Install server and client dependencies
-
-```
-yarn
-cd client
-yarn
+```bash
+npm install express-promise-router --save
 ```
 
-To start the server and client at the same time (from the root of the project)
+or yarn.
 
-```
-yarn dev
-```
-
-Running the production build on localhost. This will create a production build, then Node will serve the app on http://localhost:5000
-
-```
-NODE_ENV=production yarn dev:server
+```bash
+yarn add express-promise-router
 ```
 
-## How this works
+`express-promise-router` is a drop-in replacement for Express 4's `Router`.
 
-The key to use an Express backend with a project created with `create-react-app` is on using a **proxy**. We have a _proxy_ entry in `client/package.json`
+## Documentation
 
+Middleware and route handlers can simply return a promise.
+If the promise is rejected, `express-promise-router` will call `next` with the
+reason. This functionality removes the need to explicitly define a rejection
+handler.
+
+```javascript
+// With Express 4's router
+var router = require("express").Router();
+
+router.use("/url", function (req, res, next) {
+  Promise.reject().catch(next);
+});
+
+// With express-promise-router
+var router = require("express-promise-router")();
+
+router.use("/url", function (req, res) {
+  return Promise.reject();
+});
 ```
-"proxy": "http://localhost:5000/"
+
+Calling `next()` and `next("route")` is supported by resolving a promise with either `"next"` or `"route"`. No action is taken if the promise is resolved with any other value.
+
+```javascript
+router.use("/url", function (req, res) {
+  // equivalent to calling next()
+  return Promise.resolve("next");
+});
+
+router.use("/url", function (req, res) {
+  // equivalent to calling next('route')
+  return Promise.resolve("route");
+});
 ```
 
-This tells Webpack development server to proxy our API requests to our API server, given that our Express server is running on **localhost:5000**
+This package still allows calling `next` directly.
 
-## Tutorial
+```javascript
+router = require("express-promise-router")();
 
-Visit my [blog post](https://esausilva.com/2017/11/14/how-to-use-create-react-app-with-a-node-express-backend-api/) entry for a detailed step-by-step guide.
+// still works as expected
+router.use("/url", function (req, res, next) {
+  next();
+});
+```
 
-[Deployed app](https://cra-express.herokuapp.com/)
+### ES6 Imports
 
-## Giving Back
+`express-promise-router` can be imported via ES6 imports. The `Router`
+constructor is the default export.
 
-If you would like to support my work and the time I put into making tutorials, consider getting me a coffee by clicking on the image below. I would really appreciate it!
+```javascript
+import Router from "express-promise-router";
+const router = Router();
+```
 
-[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/black_img.png)](https://www.buymeacoffee.com/esausilva)
+### Async / Await
 
--Esau
+Using `async` / `await` can dramatically improve code readability.
+
+```javascript
+router.get('/url', async function (req, res) {
+    const user = await User.fetch(req.user.id);
+
+    if (user.permission !== "ADMIN") {
+      throw new Error("You must be an admin to view this page.");
+    }
+
+    res.send(`Hi ${user.name}!`);
+})
+```
+
+### Error handling
+
+Just like with regular `express.Router` you can define custom error handlers.
+
+```javascript
+router.use((err, req, res, next) => {
+  res.status(403).send(err.message);
+});
+```
+
+### Frequently Asked Questions
+
+#### `Cannot read property '0' of undefined`
+
+This error may indicate that you call a method that needs a path, without one.
+Calling `router.get` (or `post`, `all` or any other verb) without a path is not
+valid. You should always specify a path like this:
+
+```javascript
+// DO:
+router.get("/", function (req, res) {
+  res.send("Test");
+});
+
+// DON'T:
+router.get(function (req, res) {
+  res.send("Test");
+});
+```
+
+For more information take a look at [this comment](https://github.com/express-promise-router/express-promise-router/issues/46#issuecomment-342002277).
+
+#### Can i use this on `app`?
+
+We currently don't support promisifying the `app` object. To use promises with
+the top-level router we recommend mounting a `Router` on the app object, like
+this:
+
+```javascript
+import express from "express";
+import Router from "express-promise-router";
+
+const app = express();
+const router = Router();
+app.use(router);
+
+router.get("/", function (req, res) {
+  res.send("Test");
+});
+```
+
+#### Why aren't promise values sent to the client
+
+We don't send values at the end of the promise chain to the client, because this
+could easily lead to the unintended leak of secrets or internal state. If you
+intend to send the result of your chain as JSON, please add an explicit
+`.then(data => res.send(data))` to the end of your chain or send it in the last
+promise handler.
+
+## Contributing
+
+Add unit tests for any new or changed functionality.
+Lint and test your code using `npm test`.
+
+Unit tests use [mocha](https://mochajs.org) and
+[chai](http://chaijs.com).
+
+We use [eslint](http://eslint.org), but styling is
+controlled mostly by
+[prettier](https://github.com/prettier/prettier/blob/master/README.md)
+which reformats your code before you commit. You can manually trigger a
+reformat using `npm run-script format`.
+
+## Release History
+
+See [CHANGELOG](https://github.com/express-promise-router/express-promise-router/blob/trunk/CHANGELOG.md)
+
+## Attribution
+
+Licensed under the [MIT license](LICENSE).
+
+Initial implementation by [Alex Whitney](https://github.com/alex-whitney) \
+Maintained by [Moritz Mahringer](https://github.com/mormahr) \
+Contributed to by [awesome people](https://github.com/express-promise-router/express-promise-router/graphs/contributors)
