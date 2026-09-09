@@ -1,110 +1,134 @@
-# route-list
+There is an example [use-webpack](https://github.com/YDJ-FE/ts-react-vite_or_webpack/tree/use-webpack)
 
-![Version](https://img.shields.io/npm/v/route-list)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-[![CI](https://github.com/VladimirMikulic/route-list/actions/workflows/ci.yml/badge.svg)](https://github.com/VladimirMikulic/route-list/actions)
-[![Twitter: VladoDev](https://img.shields.io/twitter/follow/VladoDev.svg?style=social)](https://twitter.com/VladoDev)
+This is a simple (admin) starter with typescript, react and vite.
 
-> ✨ Beautifully shows Express/Koa/Hapi/Fastify routes in CLI.
+Have a quick view:
 
-![route-list CLI example](./screenshots/showcase.png)
+<img src="./screenshot.png" width="900">
 
-## 📦 Installation
+## setup
 
-```sh
-# Installs the package so it's globally accessible in terminal
-npm i route-list -g
+> for husky
+
+```bash
+$ npm run prepare
 ```
 
-## 🔌 Configuration
+> If you do not need the taobao registry, you can change it in `.npmrc`
 
-Before you can use `route-list` on your project, we first need to make sure it's configured properly.
-In order for `route-list` to work, we need to export server "app".
-The example below is for Express but it also applies to Koa (with @koa/router)/Hapi/Fastify.
-
-**app.js** / **app.ts**
-
-```js
-const app = express();
-
-app.get('/', (req, res) => res.sendStatus(200));
-app.get('/products', (req, res) => res.sendStatus(200));
-app.get('/products/:id', (req, res) => res.sendStatus(200));
-
-// CJS
-// Option 1: module.exports = app;
-// Option 2: module.exports = { app, yourOtherExports... };
-// Option 3: module.exports = functionThatReturnsApp;
-
-// ESM
-// Option 1: export default app;
-// Option 2: export default { app, yourOtherExports... };
-// Option 3: export default functionThatReturnsApp;
+```bash
+$ npm i
 ```
 
-> NOTE: In case you use [SocketIO with Express](https://socket.io/get-started/chat#the-web-framework), make sure to **export Express app**, not `http.createServer` server instance.
+## test
 
-## ☁️ Usage
-
-### Options
-
-- `-g, --group` - Display routes in groups separated with new line
-- `-m, --methods <methods>` - Include routes registered for HTTP method(s)
-- `-i, --include-paths <paths>` - Include routes starting with path(s)
-- `-e, --exclude-paths <paths>` - Exclude routes starting with path(s)
-
-### Examples
-
-```sh
-route-list server/app.js
+```bash
+$ npm test
 ```
 
-```sh
-route-list --group server/app.js
+## build for development
+
+```bash
+$ npm run dev
 ```
 
-```sh
-route-list --methods GET,POST server/app.js
+## build for production
+
+```bash
+$ npm run build:(qa/prod)
 ```
 
-> NOTE: In case an app is part of NX monorepo, make sure to build it first.
+## characteristics
 
-## 💻 Programmatic Usage
+-   use [ant design](https://ant.design/index-cn) as UI framework
+-   use ServiceWorker
+-   use husky{pre-commit/commit-msg} hooks
+-   use [react-intl-universal](https://github.com/alibaba/react-intl-universal) for i18n.
+-   use [react-virtualized](https://github.com/bvaughn/react-virtualized) for fat list.
 
-```js
-import RouteList from 'route-list';
+## pages
 
-// Example result { "/": ["GET"], "/users": ["GET", "POST"] }
-const routesMap = RouteList.getRoutes(app, 'express');
+-   The Index page became a [Socket Debugger](https://starter.jackple.com/#/)
 
-// Print routes to console
-RouteList.printRoutes(routesMap);
+## TODO
+
+-   config menu by user with permission
+-   more functional pages like Socket Debugger
+
+## component example
+
+```jsx
+import React from 'react'
+import { observer } from 'mobx-react'
+import { Button } from 'antd'
+
+import history from '@shared/App/ht'
+
+function Test() {
+    function gotoHome() {
+        history.push('/')
+    }
+    return (
+        <Button type="primary" onClick={gotoHome}>
+            go to page index directly
+        </Button>
+    )
+}
+
+export default observer(Test)
 ```
 
-## 👨 Author
+[live example](https://github.com/YDJ-FE/ts-react-webpack4/blob/master/src/containers/views/Login/index.tsx?1532570619900)
 
-**Vladimir Mikulic**
+## necessary extensions (on vscode)
 
-- Twitter: [@VladoDev](https://twitter.com/VladoDev)
-- Github: [@VladimirMikulic](https://github.com/VladimirMikulic)
-- LinkedIn: [@vladimirmikulic](https://www.linkedin.com/in/vladimir-mikulic/)
+-   [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
 
-## 🤝 Contributing
+-   [stylelint](https://marketplace.visualstudio.com/items?itemName=stylelint.vscode-stylelint)
 
-Contributions, issues and feature requests are welcome!
+-   [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 
-## 🍻 Credits
+## how to upload file to server
 
-The project was inspired by new `route:list` command in Laravel 9.
-New [`route:list`](https://github.com/laravel/framework/pull/40269) itself was
-inspired by [`pretty-routes`](https://github.com/Wulfheart/pretty-routes) project.
-Big thanks to [Λlex Wulf](https://twitter.com/alexfwulf) for building
-`pretty-routes` and Laravel community for recognizing the usefulness of the project.
+```bash
+#!/bin/bash
 
-## ✏️ License
+TIMESPAN=$(date '+%s')
+DEPLOYNAME=ts-react.qa.${TIMESPAN}
+DEPLOYFILES=${DEPLOYNAME}.tar.gz
+SERVER=0.0.0.0
 
-This project is licensed under [MIT](https://opensource.org/licenses/MIT) license.
+# make compression
+cd dist/qa
+tar -zcvf ${DEPLOYFILES} ./*
 
-## 👨‍🚀 Show your support
+# upload
+scp -P 22 -o StrictHostKeyChecking=no ${DEPLOYFILES} node@${SERVER}:/home/pages/ts-react/tarfiles
 
-Give a ⭐️ if this project helped you!
+# make decompression
+ssh -p 22 -o StrictHostKeyChecking=no node@${SERVER} tar xzf /home/pages/ts-react/tarfiles/${DEPLOYFILES} -C /home/pages/ts-react
+
+if [ $? -ne 0 ]; then
+    echo "success"
+else
+    echo "fail"
+fi
+```
+
+## how to deploy with nginx
+
+```nginx
+server {
+       listen       9993;
+       server_name  localhost:9993;
+
+       location / {
+             root   ~/Documents/react/ts-react/dist/qa/;
+             index  index.html;
+       }
+ }
+```
+
+## the scaffold
+
+[steamer-react-redux-ts](https://github.com/YDJ-FE/steamer-react-redux-ts)

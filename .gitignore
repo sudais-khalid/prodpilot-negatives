@@ -1,3 +1,7 @@
-node_modules
-tmp
-dist
+npm-debug*
+/dist
+/package-lock.json
+/.cache-loader
+/.awcache
+/deploy
+/stats.html
