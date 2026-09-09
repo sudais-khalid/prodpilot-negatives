@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "author": {
-    "name": "Jo\u00e3o Paulo Moraes",
+    "name": "João Paulo Moraes",
     "email": "joaopaulomoraes@outlook.com",
     "url": "https://github.com/joaopaulomoraes"
   },
@@ -15,6 +15,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "build": "tsc && vite build",
     "serve": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
