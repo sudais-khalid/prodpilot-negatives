@@ -8,16 +8,9 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+dist
 dist-ssr
 *.local
-
-# Local docs / design specs
-docs/
-
-# Local tooling
-.claude/
-.superpowers/
-*.code-workspace
 
 # Editor directories and files
 .vscode/*
