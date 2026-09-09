@@ -1,717 +1,283 @@
-# Vite React SSG
+# browserify-middleware
 
-Static-site generation for React on Vite.
+<img src="http://i.imgur.com/6cyfaYS.png" align="right" />
 
-See demo(also document): [docs](https://vite-react-ssg.netlify.app/)
+**middleware for browserify v2 with sensible defaults for the ultimate in ease of use**
 
-> [!IMPORTANT]
-> **React Router v7 Notice**
->
-> React Router v7 now has built-in SSG support. If you are using React Router v7, we recommend using its official SSG capabilities for better official support and integration.
->
-> `vite-react-ssg` will continue to maintain SSG functionality for React Router v6 users.
+In addition to the basics, browserify-middleware has the following features out of the box:
 
-**🎈 Support for [`@tanstack/router`](https://tanstack.com/router/latest/docs/framework/react/overview)
-and [`wouter`](https://github.com/molefrog/wouter) is in progress!**
+ - source-maps are automatically enabled for debugging
+ - automatically rebuilds whenever files change in development
+ - minification automatically enabled for production
+ - gzip automatically enabled for production
+ - etags for caching automatically enabled for production
 
-Support for the [`@tanstack/router`](https://tanstack.com/router/latest/docs/framework/react/overview) router is still experimental, and `pathname.lazy.tsx routes` are not yet supported.
-For usage examples, see: [`main`/examples/tanstack/src/main.tsx](https://github.com/Daydreamer-riri/vite-react-ssg/blob/main/examples/tanstack/src/main.tsx)
+With the exception of serving up directories (which requires `req.path` from express) everything is entirely framework independent.  Simply pass in `req` `res`, and a `callback` that will only be called in the event of an error.
 
-[![Mentioned in Vite Awesome](https://awesome.re/mentioned-badge.svg)](https://github.com/vitejs/awesome-vite)
-[![NPM version](https://img.shields.io/npm/v/vite-react-ssg?color=a1b858&label=)](https://www.npmjs.com/package/vite-react-ssg)
+If you think I've missed something, be sure to open an issue or submit a pull request.
 
-## Table of contents
+[![Build Status](https://img.shields.io/travis/ForbesLindesay/browserify-middleware/master.svg)](https://travis-ci.org/ForbesLindesay/browserify-middleware)
+ [![Coverage Status](https://img.shields.io/coveralls/ForbesLindesay/browserify-middleware/master.svg?style=flat)](https://coveralls.io/r/ForbesLindesay/browserify-middleware?branch=master)
+[![Dependency Status](https://img.shields.io/david/ForbesLindesay/browserify-middleware.svg)](https://david-dm.org/ForbesLindesay/browserify-middleware)
+[![NPM version](https://img.shields.io/npm/v/browserify-middleware.svg)](https://www.npmjs.com/package/browserify-middleware)
 
-- [Usage](#usage)
-- [Use CSR during development](#use-csr-during-development)
-- [Extra route options](#extra-route-options)
-  - [`entry`](#entry)
-  - [`getStaticPaths`](#getstaticpaths)
-- [Data fetch](#data-fetch)
-- [lazy](#lazy)
-- [`<ClientOnly/>`](#clientonly)
-- [Document head](#document-head)
-  - [Reactive head](#reactive-head)
-- [Redirect](#redirect)
-- [Public Base Path](#public-base-path)
-- [Future config](#future-config)
-- [CSS in JS](#css-in-js)
-- [Critical CSS](#critical-css)
-- [Configuration](#configuration)
-  - [Custom Routes to Render](#custom-routes-to-render)
-- [Roadmap](#roadmap)
-- [Credits](#credits)
+<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/gg9sZwctSLxyov1sJwW6pfyS/ForbesLindesay/browserify-middleware'>
+  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/gg9sZwctSLxyov1sJwW6pfyS/ForbesLindesay/browserify-middleware.svg' />
+</a>
 
 ## Usage
 
-<pre>
-<b>npm i -D vite-react-ssg</b> <em>react-router-dom</em>
-</pre>
+See `example` directory for a complete server
 
-```diff
-// package.json
-{
-  "scripts": {
--   "build": "vite build"
-+   "build": "vite-react-ssg build"
-    // If you need ssr when dev
--   "dev": "vite",
-+   "dev": "vite-react-ssg dev",
+```javascript
+var browserify = require('browserify-middleware');
+var express = require('express');
+var app = express();
 
-    // OR if you want to use another vite config file
-+   "build": "vite-react-ssg build -c another-vite.config.ts"
-  }
-}
+//provide browserified versions of all the files in a directory
+app.use('/js', browserify(__dirname + '/client/dir'));
+
+//provide a browserified file at a path
+app.get('/js/file.js', browserify(__dirname + '/client/file.js'));
+
+//provide a bundle exposing `require` for a few npm packages.
+app.get('/js/bundle.js', browserify(['hyperquest', 'concat-stream']));
+
+//provide a bundle for a few npm packages plus run main.js
+app.get('/js/bundle.js', browserify(['hyperquest', 'concat-stream', {__dirname + '/client/main.js': {run: true}}]));
+
+app.listen(3000);
+```
+## Multiple Bundles Example
+
+Multiple bundles can sometimes lead to better caching performance.  If you had multiple different JavaScript modules in `./client` that all depended on `hyperquest` and `concat-stream` and were used on different pages, you may want to split those two modules into separate files so that they are only loaded once for someone browsing arround the site:
+
+```javascript
+var shared = ['hyperquest', 'concat-stream'];
+app.get('/js/bundle.js', browserify(shared));
+app.use('/js', browserify('./client', {external: shared}))
 ```
 
-```ts
-// src/main.ts
-import { ViteReactSSG } from 'vite-react-ssg'
-import routes from './App.tsx'
+Then on your HTML pages you can just have:
 
-export const createRoot = ViteReactSSG(
-  // react-router-dom data routes
-  { routes },
-  // function to have custom setups
-  ({ router, routes, isClient, initialState }) => {
-    // do something.
-  },
-)
-```
-
-```tsx
-// src/App.tsx
-import type { RouteRecord } from 'vite-react-ssg'
-import React from 'react'
-import Layout from './Layout'
-import './App.css'
-
-export const routes: RouteRecord[] = [
-  {
-    path: '/',
-    element: <Layout />,
-    entry: 'src/Layout.tsx',
-    children: [
-      {
-        path: 'a',
-        lazy: () => import('./pages/a'),
-      },
-      {
-        index: true,
-        Component: React.lazy(() => import('./pages/index')),
-      },
-      {
-        path: 'nest/:b',
-        lazy: () => {
-          const Component = await import('./pages/nest/[b]')
-          return { Component }
-        },
-        // To determine which paths will be pre-rendered
-        getStaticPaths: () => ['nest/b1', 'nest/b2'],
-      },
-    ],
-  },
-]
-```
-
-### Use CSR during development
-
-Vite React SSG provide SSR (Server-Side Rendering) during development to ensure consistency
-between development and production as much as possible.
-
-But if you want to use CSR during development, just:
-
-```diff
-// package.json
-{
-  "scripts": {
--   "dev": "vite-react-ssg dev",
-+   "dev": "vite",
-    "build": "vite-react-ssg build"
-  }
-}
-```
-
-### Single Page SSG
-
-For SSG of an index page only (i.e. without `react-router-dom`);
-import `vite-react-ssg/single-page` instead.
-
-```tsx
-// src/main.tsx
-import { ViteReactSSG } from 'vite-react-ssg/single-page'
-import App from './App.tsx'
-
-export const createRoot = ViteReactSSG(<App />)
-```
-
-## Extra route options
-
-The RouteObject of vite-react-ssg is based on react-router, and vite-react-ssg receives some additional properties.
-
-#### `getStaticPaths`
-
-The `getStaticPaths()` function should return an array of path
-to determine which paths will be pre-rendered by vite-react-ssg.
-
-This function is only valid for dynamic route.
-
-```tsx
-const route = {
-  path: 'nest/:b',
-  lazy: () => import('./pages/nest/[b]'),
-  entry: 'src/pages/nest/[b].tsx',
-  // To determine which paths will be pre-rendered
-  getStaticPaths: () => ['nest/b1', 'nest/b2'],
-}
-```
-
-#### `entry`
-
-**You are not required to use this field. It is only necessary when "prehydration style loss" occurs.**
-It should be the path from root to the target file.
-
-eg: `src/pages/page1.tsx`
-
-## lazy
-
-These options work well with the `lazy` field.
-
-```tsx
-// src/pages/[page].tsx
-export function Component() {
-  return (
-    <div>{/* your component */}</div>
-  )
-}
-
-export function getStaticPaths() {
-  return ['page1', 'page2']
-}
-```
-
-```ts
-// src/routes.ts
-const routes = [
-  {
-    path: '/:page',
-    lazy: () => import('./pages/[page]'),
-  }
-]
-```
-
-**Note that** during the build process, `vite-react-ssg` will [automatically detect](https://github.com/Daydreamer-riri/vite-react-ssg/blob/main/src/node/assets.ts#L5) the files directly dynamically imported in the function you pass to the `lazy` field. This helps `vite-react-ssg` to get the route's style files or other static resources during the build, preventing [flash of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content).
-
-If you still encounter FOUC (flash of unstyled content), please open an issue.
-
-If your component isn't loading, make sure you have wrapped it or its parent in `Suspense` tags as described in the [React documentation](https://react.dev/reference/react/lazy#usage).
-
-See [example](./examples/lazy-pages/src/App.tsx).
-
-## Data fetch
-
-You can use react-router-dom's `loader` to fetch data at build time and use `useLoaderData` to get the data in the component.
-
-In production, the `loader` will only be executed at build time, and the data will be fetched by the manifest generated at build time during the browser navigations .
-
-In the development environment, the `loader` also runs only on the server.It provides data to the HTML during initial server rendering, and during browser route navigations , it makes calls to the server by initiating a fetch on the service.
-
-```tsx
-import { useLoaderData } from 'react-router-dom'
-
-export default function Docs() {
-  const data = useLoaderData() as Awaited<ReturnType<typeof loader>>
-
-  return (
-    <>
-      <div>{data.key}</div>
-      {/* eslint-disable-next-line react-dom/no-dangerously-set-innerhtml */}
-      <div dangerouslySetInnerHTML={{ __html: data.packageCodeHtml }} style={{ textAlign: 'start' }}></div>
-    </>
-  )
-}
-
-export const Component = Docs
-
-export const entry = 'src/pages/json.tsx'
-
-export async function loader() {
-  // This code will avoid `shiki` and `node:fs` being mark as 'modulepreload' and sent to the client.
-  if (!import.meta.ssr) {
-    return null
-  }
-  // The code here will not be executed on the client side, and the modules imported will not be sent to the client.
-  const fs = (await import('node:fs'))
-  const cwd = process.cwd()
-  const json = (await import('../docs/test.json')).default
-
-  const packageJson = await fs.promises.readFile(`${cwd}/package.json`, 'utf-8')
-  const { codeToHtml } = await import('shiki')
-  const packageJsonHtml = await codeToHtml(packageJson, { lang: 'json', theme: 'vitesse-light' })
-
-  return {
-    ...json,
-    packageCodeHtml: packageJsonHtml,
-  }
-}
-```
-
-See [example | with-loader](./examples/with-loader/src/pages/[docs].tsx).
-
-## `<ClientOnly/>`
-
-If you need to render some component in browser only, you can wrap your component with `<ClientOnly>`.
-
-```tsx
-import { ClientOnly } from 'vite-react-ssg'
-
-function MyComponent() {
-  return (
-    <ClientOnly>
-      {() => {
-        return <div>{window.location.href}</div>
-      }}
-    </ClientOnly>
-  )
-}
-```
-
-> It's important that the children of `<ClientOnly>` is not a JSX element, but a function that returns an element.
-> Because React will try to render children, and may use the client's API on the server.
-
-## Document head
-
-You can use `<Head/>` to manage all of your changes to the document head. It takes plain HTML tags and outputs plain HTML tags. It is a wrapper around [React Helmet](https://github.com/nfl/react-helmet).
-
-```tsx
-import { Head } from 'vite-react-ssg'
-
-function MyHead() {
-  return (
-    <Head>
-      <meta property="og:description" content="My custom description" />
-      <meta charSet="utf-8" />
-      <title>My Title</title>
-      <link rel="canonical" href="http://mysite.com/example" />
-    </Head>
-  )
-}
-```
-
-Nested or latter components will override duplicate usages:
-
-```tsx
-import { Head } from 'vite-react-ssg'
-
-function MyHead() {
-  return (
-    <parent>
-      <Head>
-        <title>My Title</title>
-        <meta name="description" content="Helmet application" />
-      </Head>
-      <child>
-        <Head>
-          <title>Nested Title</title>
-          <meta name="description" content="Nested component" />
-        </Head>
-      </child>
-    </parent>
-  )
-}
-```
-
-Outputs:
-
+page1.html
 ```html
-<head>
-  <title>Nested Title</title>
-  <meta name="description" content="Nested component" />
-</head>
+<script src="/js/bundle.js"></script>
+<script src="/js/beep.js"></script>
 ```
 
-### Reactive head
-
-```tsx
-import { useState } from 'react'
-import { Head } from 'vite-react-ssg'
-
-export default function MyHead() {
-  const [state, setState] = useState(false)
-
-  return (
-    <Head>
-      <meta charSet="UTF-8" />
-      <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-      <title>head test {state ? 'A' : 'B'}</title>
-      {/* You can also set the 'body' attributes here */}
-      <body className={`body-class-in-head-${state ? 'a' : 'b'}`} />
-    </Head>
-  )
-}
+page2.html
+```html
+<script src="/js/bundle.js"></script>
+<script src="/js/boop.js"></script>
 ```
 
-## Redirect
+This way, booth `beep.js` and `boop.js` can `require` the shared modules (`hyperquest` and `concat-stream`) but they aren't actually contained within that file.
 
-You should not use redirect in the loader.
-In vite-react-ssg, the loader only executes during the build process for data fetching.
-If you need to perform a redirect in certain situations, you can use the following method to redirect on the client side:
+## API
 
-```tsx
-export const routes: RouteRecord[] = [
-  {
-    path: '/:lng',
-    Component: Layout,
-    getStaticPaths: () => Object.keys(resources),
-    children: [
-      // ... some routes
-    ],
-  },
-  {
-    path: '/',
-    Component: () => {
-      const navigate = useNavigate()
-      useEffect(() => {
-        navigate('/en', { replace: true })
-      }, [navigate])
+### `browserify('./path/to/file.js'[, options])`
 
-      return null
-    },
-  },
-]
+Return the middleware to serve a browserified version of the file.  The file path is relative to the calling module, not to `process.cwd()`.
+
+### `browserify('./path/to/directory/'[, options])`
+
+Return the middleware to serve a browserified version of all the files in a directory.  The directory path is relative to the calling module, not to `process.cwd()`.
+
+### `browserify(['module-a', 'module-b'][, options])`
+
+Return middleware that will expose `require` for each of the modules in the array.  This will work even if those modules are also in the `external` array.
+
+#### `browserify([{'module-d': {expose: 'dee'}}][, options])`
+
+Require `module-d` with custom options (to be passed on to browserify).  In this case `module-d` will be exposed as `dee`.  This can be mixed and matched with plain strings.  Note that these modules must not appear in the `external` array.
+
+### `options` / `settings`
+
+The `options` passed to each middleware function override the defaults specified in `settings`.
+
+Setings has two properties `settings.production` and `settings.development` which specify the default settings for each environment.  The current environment is specified by `settings.mode` and defaults to `process.env.NODE_ENV || 'development'`
+
+Production defaults:
+
+```javascript
+production.cache = true; // equivalent to "public, max-age=60"
+production.precompile = true;
+production.minify = true;
+production.gzip = true;
+production.debug = false;
 ```
 
-## Public Base Path
+To update:
 
-Just set `base` in vite.config.ts like:
-
-```ts
-import react from '@vitejs/plugin-react-swc'
-// vite.config.ts
-import { defineConfig } from 'vite'
-
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  base: '/base-path',
-})
+```javascript
+browserify.settings.production('cache', '7 days');
 ```
 
-```ts
-// main.ts
-import { ViteReactSSG } from 'vite-react-ssg'
-import { routes } from './App'
-import './index.css'
+Development defaults:
 
-export const createRoot = ViteReactSSG(
-  {
-    routes,
-    // pass your BASE_URL
-    basename: import.meta.env.BASE_URL,
-  },
-)
+```javascript
+development.cache = 'dynamic';
+development.precompile = false;
+development.minify = false;
+development.gzip = false;
+development.debug = true;
 ```
 
-Vite React SSG will give it to the react-router's `basename`.
+To update:
 
-See: [react-router's create-browser-router](https://reactrouter.com/en/main/routers/create-browser-router#basename)
-
-[Example](./examples/lazy-pages/vite.config.ts)
-
-## Future config
-
-```tsx
-export const createRoot = ViteReactSSG(
-  {
-    routes,
-    basename: import.meta.env.BASE_URL,
-    future: {
-      v7_normalizeFormMethod: true,
-      v7_startTransition: true,
-      v7_fetcherPersist: true,
-      v7_relativeSplatPath: true,
-      v7_skipActionErrorRevalidation: true,
-      v7_partialHydration: true,
-    },
-  },
-)
+```javascript
+browserify.settings.development('gzip', true);
 ```
 
-See: [react-router's optsfuture](https://reactrouter.com/6.28.0/routers/create-browser-router#optsfuture)
+The following defaults are the same for production and development:
 
-[Example](./examples/lazy-pages/src/main.tsx)
-
-## Custom Router Factory
-
-You can provide a custom router factory function via `customCreateRouter` option.
-This is useful if you want to use a different router implementation or wrap the default `createBrowserRouter`.
-
-```ts
-import { createBrowserRouter } from 'react-router-dom'
-
-export const createRoot = ViteReactSSG(
-  {
-    routes,
-    customCreateRouter: (routes, options) => {
-      // Custom logic here
-      return createBrowserRouter(routes, options)
-    },
-  },
-)
+```javascript
+external = [];
+ignore = [];
+ignoreMissing = false;
+transform = [];
+insertGlobals = false;
+detectGlobals = true;
+standalone = false;
+grep = /\.js$/
 ```
 
-eg. [sentry](https://docs.sentry.io/platforms/javascript/guides/react/features/react-router/v6/)
+To update:
 
-```ts
-import * as Sentry from '@sentry/react'
-import { createBrowserRouter } from 'react-router-dom'
-
-export const createRoot = ViteReactSSG(
-  {
-    routes,
-    customCreateRouter: Sentry.wrapCreateBrowserRouterV6(createBrowserRouter),
-  },
-)
+```javascript
+browserify.settings('external', ['hyperquest']);
+//or
+browserify.settings({
+  ignoreMissing: true,
+  insertGlobals: true,
+  transform: ['rfileify']
+});
 ```
 
-## CSS in JS
+Custom Environments:
 
-Use the `getStyleCollector` option to specify an SSR/SSG style collector. Currently only supports `styled-components`.
+You can also create a new custom environment:
 
-```tsx
-import { ViteReactSSG } from 'vite-react-ssg'
-import getStyledComponentsCollector from 'vite-react-ssg/style-collectors/styled-components'
-import { routes } from './App.js'
-import './index.css'
-
-export const createRoot = ViteReactSSG(
-  { routes },
-  () => { },
-  { getStyleCollector: getStyledComponentsCollector }
-)
+```javascript
+var test = browserify.settings.env('test');
+test('minify', true);
+//or
+test({
+  debug: true
+});
 ```
 
-You can provide your own by looking at the [implementation](./src/style-collectors/) of any of the existing collectors.
+#### cache
 
-## Critical CSS
+The cache setting determines how long content can be cached in the client's web browsers (and any caching proxies) and whether or not to cache bundles server side.  Any value other than `false` will result in them being cached server side.  The `'dynamic'` cache option is special.  It works like watchify and only re-compiles the files that have changed.  This is the fastest option for development.  It does not enable any client side caching.
 
-Vite React SSG has built-in support for generating [Critical CSS](https://web.dev/extract-critical-css/) inlined in the HTML via the [`beasties`](https://github.com/danielroe/beasties) package.
-Install it with:
+If cache is `true` the client will recieve Cache Control of `"public, max-age=60"`, which caches for 60 seconds.
 
-```bash
-npm i -D beasties
+If cache is a `string` in the form accepted by [ms](https://npmjs.org/package/ms) it becomes: `"public, max-age=" + (ms(cache)/1000)`
+
+If cache is a `number`, it is treated as being in milliseconds so becomes: `"public, max-age=" + (cache/1000)`
+
+If cache is an `object` of the form `{private: true || false, maxAge: '10 minutes'}` it becomes the apropriate string.
+
+If cache is any other `string` it will be sent directly to the client.
+
+**N.B.** that if caching is enabled, the server never times out its cache, no matter what the timeout set for the client.
+
+#### precompile
+
+The precompile setting enables bundles to be precompiled/built and readily cached immediately on server startup. This option is not available when using browserify with a directory.  If `precompile` is set to `true`, the bundle will be compiled & cached at server start.
+
+```javascript
+// Precompile a browserified file at a path
+app.get('/js/file.js', browserify('./client/file.js', {
+  cache: true,
+  precompile: true
+}));
+
+// Precompile a bundle exposing `require` for a few npm packages.
+app.get('/js/bundle.js', browserify(['hyperquest', 'concat-stream'], {
+  cache: true,
+  precompile: true
+}));
 ```
 
-Critical CSS generation will automatically be enabled for you.
+**N.B.**  It only makes sense to use precompiling when caching is enabled. If caching is disabled, no precompiling will happen.
 
-To configure `beasties`, pass [its options](https://github.com/danielroe/beasties#usage)
-into `ssgOptions.beastiesOptions` in `vite.config.ts`:
+#### minify
 
-```ts
-// vite.config.ts
-export default defineConfig({
-  ssgOptions: {
-    beastiesOptions: {
-      // E.g., change the preload strategy
-      preload: 'media',
-      // Other options: https://github.com/danielroe/beasties#usage
-    },
-  },
-})
-```
+If `minify` is `true`, UglifyJS will be used to minify the resulting code.  This is `true` by default in production.  If you set it to an object, the object will be passed to uglify-js as [options](https://github.com/mishoo/UglifyJS2#the-simple-way):
 
-## Configuration
+ - `warnings` (default `false`) - pass `true` to display compressor warnings
+ - `mangle` (default `true`) - pass `false` to skip mangling names
+ - `output` (default `null`) - pass an object to specify additional [output options](http://lisperator.net/uglifyjs/codegen). The defaults are optimized for best compression.
+ - `compress` (default `{}`) - pass `false` to skip compressing entirely.  Pass an object to specify custom [compressor options](http://lisperator.net/uglifyjs/compress).
 
-You can pass options to Vite SSG in the `ssgOptions` field of your `vite.config.js`
+#### gzip
+
+If `gzip` is `true`, GZip will be enabled when clients support it.  This increases the memory required for caching by aproximately 50% but the speed boost can be considerable.  It is `true` by default in production.
+
+#### debug
+
+If `debug` is `true`, a source map will be added to the code.  This is very useful when debugging.  `debug` is `false` in production.
+
+#### basedir
+
+If `debug` is `true` you can provide a `string` pathname for basedir and the paths of your files in the source-map will be displayed relative to that file.  This is great for hiding the details of your local file system or tidying up the debugging of a large app.
+
+#### plugins
+
+An array of objects of the form `{plugin: 'name', options: {object}}`.
+
+#### grep
+
+The regular expression, something like [`/\.(?:js|coffee|ls)$/`](http://tinyurl.com/pawk7cu), that a filename must pass to be served using browserify from a directory.
+
+#### hooks
+
+There are a number of hooks that you can implement to modify the source at a few stages of processing.
+
+e.g.
 
 ```js
-// vite.config.js
-
-export default {
-  plugins: [],
-  ssgOptions: {
-    script: 'async',
-  },
-}
+app.get('/index.js', browserify('/index.js', {
+  preminify: function (source) {
+    return angularJsMinifier(source);
+  }
+}));
 ```
 
-```ts
-interface ViteReactSSGOptions {
-  /**
-   * Set the scripts' loading mode. Only works for `type="module"`.
-   *
-   * @default 'sync'
-   */
-  script?: 'sync' | 'async' | 'defer' | 'async defer'
-  /**
-   * Build format.
-   *
-   * @default 'esm'
-   */
-  format?: 'esm' | 'cjs'
-  /**
-   * The path of the main entry file (relative to the project root).
-   *
-   * @default 'src/main.ts'
-   */
-  entry?: string
-  /**
-   * The path of the index.html file (relative to the project root).
-   * @default 'index.html'
-   */
-  htmlEntry?: string
-  /**
-   * Mock browser global variables (window, document, etc...) from SSG.
-   *
-   * @default false
-   */
-  mock?: boolean
-  /**
-   * Apply formatter to the generated index file.
-   *
-   * **It will cause Hydration Failed.**
-   *
-   * @default 'none'
-   */
-  formatting?: 'prettify' | 'none'
-  /**
-   * Vite environment mode.
-   */
-  mode?: string
-  /**
-   * Directory style of the output directory.
-   *
-   * flat: `/foo` -> `/foo.html`
-   * nested: `/foo` -> `/foo/index.html`
-   *
-   * @default 'flat'
-   */
-  dirStyle?: 'flat' | 'nested'
-  /**
-   * Generate for all routes, including dynamic routes.
-   * If enabled, you will need to configure your serve
-   * manually to handle dynamic routes properly.
-   *
-   * @default false
-   */
-  includeAllRoutes?: boolean
-  /**
-   * Options for the beasties packages.
-   *
-   * @see https://github.com/danielroe/beasties#usage
-   */
-  beastiesOptions?: BeastiesOptions | false
-  /**
-   * Custom function to modify the routes to do the SSG.
-   *
-   * Works only when `includeAllRoutes` is set to false.
-   *
-   * Defaults to a handler that filters out all the dynamic routes.
-   * When passing your custom handler, you should also take care of the dynamic routes yourself.
-   */
-  includedRoutes?: (paths: string[], routes: Readonly<RouteRecord[]>) => Promise<string[]> | string[]
-  /**
-   * Callback to be called before every page render.
-   *
-   * It can be used to transform the project's `index.html` file before passing it to the renderer.
-   *
-   * To do so, you can change the 'index.html' file contents (passed in through the `indexHTML` parameter), and return it.
-   * The returned value will then be passed to renderer.
-   */
-  onBeforePageRender?: (route: string, indexHTML: string, appCtx: ViteReactSSGContext<true>) => Promise<string | null | undefined> | string | null | undefined
-  /**
-   * Callback to be called on every rendered page.
-   *
-   * It can be used to transform the current route's rendered HTML.
-   *
-   * To do so, you can transform the route's rendered HTML (passed in through the `renderedHTML` parameter), and return it.
-   * The returned value will be used as the HTML of the route.
-   */
-  onPageRendered?: (route: string, renderedHTML: string, appCtx: ViteReactSSGContext<true>) => Promise<string | null | undefined> | string | null | undefined
+The available hooks are currently:
 
-  /**
-   * A function that is run after generation is complete.
-   * It receives the build output directory as a string.
-   *
-   * You can use this to add, edit, or delete files in the output
-   directory that you don't want to manage in React.
-   */
-  onFinished?: (dir: string) => Promise<void> | void
-  /**
-   * The application's root container `id`.
-   *
-   * @default `root`
-   */
-  rootContainerId?: string
-  /**
-   * The size of the SSG processing queue.
-   *
-   * @default 20
-   */
-  concurrency?: number
-}
-```
+ - postcompile - fires after compilation, but before any minfication/gzipping
+ - preminify - fires before minfication (but only if minify is enabled)
+ - postminify - fires after minfication (but only if minify is enabled)
 
-See [src/types.ts](./src/types.ts). for more options available.
+The main use case you might have for this would be adding extra minfication steps that are able to make additional assumptions about your code.  These hooks can return either a string or a Promise for a string.
 
-### Custom Routes to Render
+#### Others
 
-You can use the `includedRoutes` hook to include or exclude route paths to render, or even provide some completely custom ones.
+The remaining settings are all passed through to browserify, you should look at [the browserify readme](https://github.com/substack/node-browserify) if you want to know more:
 
-```js
-// vite.config.js
+- `options.external` - an array of module names that will be required from external bundles (see [browserify/multiple bundles](https://github.com/substack/node-browserify#multiple-bundles)) (default: `[]`)
+- `options.ignore` - an aray of module names that are prevented from showing up in the output bundle (default: `[]`)
+- `options.ignoreMissing` - set to `true` to ignore errors when a module can't be found (default: `false`).
+- `options.transform` - an array of transforms to transform top level modules (default: `[]`). Each item can be:
+    - `"transform-name"` - the npm name of the transform
+    - `transformFunction` - the transform function
+    - `["transform-name" | tranformFunction, {option1: true, ...}]` - the transform and some options
+- `options.insertGlobals` - set to true to always insert `process`, `global` etc. without analysing the AST for faster builds but larger bundles (Note that `options.minify` may cause the globals to be removed again anyway) (default: false)
+- `options.detectGlobals` - set to false to skip adding `process`, `global` etc.  Setting this to false may break more npm modules (default: true).
+- `options.noParse` - an array of module names that should not be parsed for `require` statements of node.js style globals, can speed up loading things like jQuery that are huge but never use `require`.
+- `options.standalone` - generate a standalone build (in a [umd](https://github.com/ForbesLindesay/umd) wrapper) with this name, you probably don't want this.
+- `options.extensions` - an array of optional extra extensions for the module lookup machinery to use when the extension has not been specified. By default browserify considers only `.js` and `.json` files in such cases.
+- `options.resolve` - lets you override the default resolution algorithm (e.g. use browserify to compile component modules)
+- `options.basedir` - this shouldn't be needed as browserify-middleware already resolves to absolute paths.
 
-export default {
-  plugins: [],
-  ssgOptions: {
-    includedRoutes(paths, routes) {
-      // exclude all the route paths that contains 'foo'
-      return paths.filter(i => !i.includes('foo'))
-    },
-  },
-}
-```
-
-```js
-// vite.config.js
-
-export default {
-  plugins: [],
-  ssgOptions: {
-    includedRoutes(paths, routes) {
-      // use original route records
-      return routes.flatMap(route => {
-        return route.name === 'Blog'
-          ? myBlogSlugs.map(slug => `/blog/${slug}`)
-          : route.path
-      })
-    },
-  },
-}
-```
-
-```ts
-export default defineConfig({
-  server: {
-    https: true,
-  },
-})
-```
-
-### React17 Support
-
-- for react18, with flag `useLegacyRender: true`, it will use the legacy `render` and `hydrate` methods.
-- for react17, on top of above, you will need minor update to react and react-dom [example](https://github.com/jesse23/webpack-test-bed/blob/main/scripts/define-react-exports.js) to polyfill the mjs import and the `react-dom/client`.
-
-## Roadmap
-
-- [x] Support `react19`
-- [ ] no index.html mode
-
-## Credits
-
-This project inspired by [vite-ssg](https://github.com/antfu/vite-ssg), thanks to [@antfu](https://github.com/antfu) for his awesome work.
+You can optionally pass a single item instead of an array to any of the options that take an array.
 
 ## License
 
-[MIT](./LICENSE) License © 2023 [Riri](https://github.com/Daydreamer-riri)
+  MIT
+
+  If you find it useful, a donation via [gittip](https://www.gittip.com/ForbesLindesay) would be appreciated.
