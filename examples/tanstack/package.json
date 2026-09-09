@@ -1,0 +1,23 @@
+{
+  "name": "tanstack",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "vite-react-ssg dev",
+    "dev:csr": "vite",
+    "// build": "vite-react-ssg build",
+    "serve": "vite preview",
+    "start": "vite"
+  },
+  "dependencies": {
+    "shiki": "^1.11.1",
+    "vite": "catalog:",
+    "vite-react-ssg": "workspace:*"
+  },
+  "devDependencies": {
+    "@tanstack/router-plugin": "^1.57.15",
+    "@vitejs/plugin-react": "^4.3.1"
+  }
+}

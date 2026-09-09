@@ -1,210 +1,717 @@
-express-validation
-==================
+# Vite React SSG
 
-[![Build Status](https://travis-ci.org/AndrewKeig/express-validation.svg?branch=master)](https://travis-ci.org/AndrewKeig/express-validation)
-[![npm module](https://badge.fury.io/js/express-validation.svg)](https://www.npmjs.org/package/express-validation)
-[![Current Version](https://flat.badgen.net/npm/v/express-validation?icon=npm)](https://www.npmjs.org/package/express-validation)
-[![airbnb-style](https://flat.badgen.net/badge/eslint/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
-[![Coverage Status](https://coveralls.io/repos/github/AndrewKeig/express-validation/badge.svg)](https://coveralls.io/github/AndrewKeig/express-validation)
-[![npm downloads](https://img.shields.io/npm/dm/express-validation.svg?style=flat)](https://www.npmjs.com/package/express-validation)
-[![Known Vulnerabilities](https://snyk.io/test/github/AndrewKeig/express-validation/badge.svg?targetFile=package.json)](https://snyk.io/test/github/AndrewKeig/express-validation?targetFile=package.json)
+Static-site generation for React on Vite.
 
+See demo(also document): [docs](https://vite-react-ssg.netlify.app/)
 
-`express-validation` is an express middleware that validates a request and returns a response with errors; if any of the configured validation rules fail.
+> [!IMPORTANT]
+> **React Router v7 Notice**
+>
+> React Router v7 now has built-in SSG support. If you are using React Router v7, we recommend using its official SSG capabilities for better official support and integration.
+>
+> `vite-react-ssg` will continue to maintain SSG functionality for React Router v6 users.
 
-We use [joi](https://github.com/hapijs/joi/tree/master) to define validation rules. We have a hard dependency on Joi in order to avoid compatibility issues with Joi releases.  We are using snyk, which should help with this process.
+**🎈 Support for [`@tanstack/router`](https://tanstack.com/router/latest/docs/framework/react/overview)
+and [`wouter`](https://github.com/molefrog/wouter) is in progress!**
 
-Currently support Joi v17.x.x
+Support for the [`@tanstack/router`](https://tanstack.com/router/latest/docs/framework/react/overview) router is still experimental, and `pathname.lazy.tsx routes` are not yet supported.
+For usage examples, see: [`main`/examples/tanstack/src/main.tsx](https://github.com/Daydreamer-riri/vite-react-ssg/blob/main/examples/tanstack/src/main.tsx)
 
-## Parameter types
-We support validating the following parameter types:
+[![Mentioned in Vite Awesome](https://awesome.re/mentioned-badge.svg)](https://github.com/vitejs/awesome-vite)
+[![NPM version](https://img.shields.io/npm/v/vite-react-ssg?color=a1b858&label=)](https://www.npmjs.com/package/vite-react-ssg)
 
-- headers
-- params (path)
-- query
-- cookies
-- signedCookies
-- body
+## Table of contents
 
-## Install
+- [Usage](#usage)
+- [Use CSR during development](#use-csr-during-development)
+- [Extra route options](#extra-route-options)
+  - [`entry`](#entry)
+  - [`getStaticPaths`](#getstaticpaths)
+- [Data fetch](#data-fetch)
+- [lazy](#lazy)
+- [`<ClientOnly/>`](#clientonly)
+- [Document head](#document-head)
+  - [Reactive head](#reactive-head)
+- [Redirect](#redirect)
+- [Public Base Path](#public-base-path)
+- [Future config](#future-config)
+- [CSS in JS](#css-in-js)
+- [Critical CSS](#critical-css)
+- [Configuration](#configuration)
+  - [Custom Routes to Render](#custom-routes-to-render)
+- [Roadmap](#roadmap)
+- [Credits](#credits)
 
-Install with npm:
+## Usage
 
-```sh
-npm i express-validation --save
+<pre>
+<b>npm i -D vite-react-ssg</b> <em>react-router-dom</em>
+</pre>
+
+```diff
+// package.json
+{
+  "scripts": {
+-   "build": "vite build"
++   "build": "vite-react-ssg build"
+    // If you need ssr when dev
+-   "dev": "vite",
++   "dev": "vite-react-ssg dev",
+
+    // OR if you want to use another vite config file
++   "build": "vite-react-ssg build -c another-vite.config.ts"
+  }
+}
 ```
 
-Install with yarn:
+```ts
+// src/main.ts
+import { ViteReactSSG } from 'vite-react-ssg'
+import routes from './App.tsx'
 
-```sh
-yarn add express-validation
+export const createRoot = ViteReactSSG(
+  // react-router-dom data routes
+  { routes },
+  // function to have custom setups
+  ({ router, routes, isClient, initialState }) => {
+    // do something.
+  },
+)
 ```
 
-## Example
+```tsx
+// src/App.tsx
+import type { RouteRecord } from 'vite-react-ssg'
+import React from 'react'
+import Layout from './Layout'
+import './App.css'
 
-In order to setup and use `express-validation` consider the following simple express application. It has a single route; configured to use the `express-validation` middleware function `validate`; it accepts as input `loginValidation`; which defines validation rules for this route.
+export const routes: RouteRecord[] = [
+  {
+    path: '/',
+    element: <Layout />,
+    entry: 'src/Layout.tsx',
+    children: [
+      {
+        path: 'a',
+        lazy: () => import('./pages/a'),
+      },
+      {
+        index: true,
+        Component: React.lazy(() => import('./pages/index')),
+      },
+      {
+        path: 'nest/:b',
+        lazy: () => {
+          const Component = await import('./pages/nest/[b]')
+          return { Component }
+        },
+        // To determine which paths will be pre-rendered
+        getStaticPaths: () => ['nest/b1', 'nest/b2'],
+      },
+    ],
+  },
+]
+```
 
+### Use CSR during development
+
+Vite React SSG provide SSR (Server-Side Rendering) during development to ensure consistency
+between development and production as much as possible.
+
+But if you want to use CSR during development, just:
+
+```diff
+// package.json
+{
+  "scripts": {
+-   "dev": "vite-react-ssg dev",
++   "dev": "vite",
+    "build": "vite-react-ssg build"
+  }
+}
+```
+
+### Single Page SSG
+
+For SSG of an index page only (i.e. without `react-router-dom`);
+import `vite-react-ssg/single-page` instead.
+
+```tsx
+// src/main.tsx
+import { ViteReactSSG } from 'vite-react-ssg/single-page'
+import App from './App.tsx'
+
+export const createRoot = ViteReactSSG(<App />)
+```
+
+## Extra route options
+
+The RouteObject of vite-react-ssg is based on react-router, and vite-react-ssg receives some additional properties.
+
+#### `getStaticPaths`
+
+The `getStaticPaths()` function should return an array of path
+to determine which paths will be pre-rendered by vite-react-ssg.
+
+This function is only valid for dynamic route.
+
+```tsx
+const route = {
+  path: 'nest/:b',
+  lazy: () => import('./pages/nest/[b]'),
+  entry: 'src/pages/nest/[b].tsx',
+  // To determine which paths will be pre-rendered
+  getStaticPaths: () => ['nest/b1', 'nest/b2'],
+}
+```
+
+#### `entry`
+
+**You are not required to use this field. It is only necessary when "prehydration style loss" occurs.**
+It should be the path from root to the target file.
+
+eg: `src/pages/page1.tsx`
+
+## lazy
+
+These options work well with the `lazy` field.
+
+```tsx
+// src/pages/[page].tsx
+export function Component() {
+  return (
+    <div>{/* your component */}</div>
+  )
+}
+
+export function getStaticPaths() {
+  return ['page1', 'page2']
+}
+```
+
+```ts
+// src/routes.ts
+const routes = [
+  {
+    path: '/:page',
+    lazy: () => import('./pages/[page]'),
+  }
+]
+```
+
+**Note that** during the build process, `vite-react-ssg` will [automatically detect](https://github.com/Daydreamer-riri/vite-react-ssg/blob/main/src/node/assets.ts#L5) the files directly dynamically imported in the function you pass to the `lazy` field. This helps `vite-react-ssg` to get the route's style files or other static resources during the build, preventing [flash of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content).
+
+If you still encounter FOUC (flash of unstyled content), please open an issue.
+
+If your component isn't loading, make sure you have wrapped it or its parent in `Suspense` tags as described in the [React documentation](https://react.dev/reference/react/lazy#usage).
+
+See [example](./examples/lazy-pages/src/App.tsx).
+
+## Data fetch
+
+You can use react-router-dom's `loader` to fetch data at build time and use `useLoaderData` to get the data in the component.
+
+In production, the `loader` will only be executed at build time, and the data will be fetched by the manifest generated at build time during the browser navigations .
+
+In the development environment, the `loader` also runs only on the server.It provides data to the HTML during initial server rendering, and during browser route navigations , it makes calls to the server by initiating a fetch on the service.
+
+```tsx
+import { useLoaderData } from 'react-router-dom'
+
+export default function Docs() {
+  const data = useLoaderData() as Awaited<ReturnType<typeof loader>>
+
+  return (
+    <>
+      <div>{data.key}</div>
+      {/* eslint-disable-next-line react-dom/no-dangerously-set-innerhtml */}
+      <div dangerouslySetInnerHTML={{ __html: data.packageCodeHtml }} style={{ textAlign: 'start' }}></div>
+    </>
+  )
+}
+
+export const Component = Docs
+
+export const entry = 'src/pages/json.tsx'
+
+export async function loader() {
+  // This code will avoid `shiki` and `node:fs` being mark as 'modulepreload' and sent to the client.
+  if (!import.meta.ssr) {
+    return null
+  }
+  // The code here will not be executed on the client side, and the modules imported will not be sent to the client.
+  const fs = (await import('node:fs'))
+  const cwd = process.cwd()
+  const json = (await import('../docs/test.json')).default
+
+  const packageJson = await fs.promises.readFile(`${cwd}/package.json`, 'utf-8')
+  const { codeToHtml } = await import('shiki')
+  const packageJsonHtml = await codeToHtml(packageJson, { lang: 'json', theme: 'vitesse-light' })
+
+  return {
+    ...json,
+    packageCodeHtml: packageJsonHtml,
+  }
+}
+```
+
+See [example | with-loader](./examples/with-loader/src/pages/[docs].tsx).
+
+## `<ClientOnly/>`
+
+If you need to render some component in browser only, you can wrap your component with `<ClientOnly>`.
+
+```tsx
+import { ClientOnly } from 'vite-react-ssg'
+
+function MyComponent() {
+  return (
+    <ClientOnly>
+      {() => {
+        return <div>{window.location.href}</div>
+      }}
+    </ClientOnly>
+  )
+}
+```
+
+> It's important that the children of `<ClientOnly>` is not a JSX element, but a function that returns an element.
+> Because React will try to render children, and may use the client's API on the server.
+
+## Document head
+
+You can use `<Head/>` to manage all of your changes to the document head. It takes plain HTML tags and outputs plain HTML tags. It is a wrapper around [React Helmet](https://github.com/nfl/react-helmet).
+
+```tsx
+import { Head } from 'vite-react-ssg'
+
+function MyHead() {
+  return (
+    <Head>
+      <meta property="og:description" content="My custom description" />
+      <meta charSet="utf-8" />
+      <title>My Title</title>
+      <link rel="canonical" href="http://mysite.com/example" />
+    </Head>
+  )
+}
+```
+
+Nested or latter components will override duplicate usages:
+
+```tsx
+import { Head } from 'vite-react-ssg'
+
+function MyHead() {
+  return (
+    <parent>
+      <Head>
+        <title>My Title</title>
+        <meta name="description" content="Helmet application" />
+      </Head>
+      <child>
+        <Head>
+          <title>Nested Title</title>
+          <meta name="description" content="Nested component" />
+        </Head>
+      </child>
+    </parent>
+  )
+}
+```
+
+Outputs:
+
+```html
+<head>
+  <title>Nested Title</title>
+  <meta name="description" content="Nested component" />
+</head>
+```
+
+### Reactive head
+
+```tsx
+import { useState } from 'react'
+import { Head } from 'vite-react-ssg'
+
+export default function MyHead() {
+  const [state, setState] = useState(false)
+
+  return (
+    <Head>
+      <meta charSet="UTF-8" />
+      <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+      <title>head test {state ? 'A' : 'B'}</title>
+      {/* You can also set the 'body' attributes here */}
+      <body className={`body-class-in-head-${state ? 'a' : 'b'}`} />
+    </Head>
+  )
+}
+```
+
+## Redirect
+
+You should not use redirect in the loader.
+In vite-react-ssg, the loader only executes during the build process for data fetching.
+If you need to perform a redirect in certain situations, you can use the following method to redirect on the client side:
+
+```tsx
+export const routes: RouteRecord[] = [
+  {
+    path: '/:lng',
+    Component: Layout,
+    getStaticPaths: () => Object.keys(resources),
+    children: [
+      // ... some routes
+    ],
+  },
+  {
+    path: '/',
+    Component: () => {
+      const navigate = useNavigate()
+      useEffect(() => {
+        navigate('/en', { replace: true })
+      }, [navigate])
+
+      return null
+    },
+  },
+]
+```
+
+## Public Base Path
+
+Just set `base` in vite.config.ts like:
+
+```ts
+import react from '@vitejs/plugin-react-swc'
+// vite.config.ts
+import { defineConfig } from 'vite'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  base: '/base-path',
+})
+```
+
+```ts
+// main.ts
+import { ViteReactSSG } from 'vite-react-ssg'
+import { routes } from './App'
+import './index.css'
+
+export const createRoot = ViteReactSSG(
+  {
+    routes,
+    // pass your BASE_URL
+    basename: import.meta.env.BASE_URL,
+  },
+)
+```
+
+Vite React SSG will give it to the react-router's `basename`.
+
+See: [react-router's create-browser-router](https://reactrouter.com/en/main/routers/create-browser-router#basename)
+
+[Example](./examples/lazy-pages/vite.config.ts)
+
+## Future config
+
+```tsx
+export const createRoot = ViteReactSSG(
+  {
+    routes,
+    basename: import.meta.env.BASE_URL,
+    future: {
+      v7_normalizeFormMethod: true,
+      v7_startTransition: true,
+      v7_fetcherPersist: true,
+      v7_relativeSplatPath: true,
+      v7_skipActionErrorRevalidation: true,
+      v7_partialHydration: true,
+    },
+  },
+)
+```
+
+See: [react-router's optsfuture](https://reactrouter.com/6.28.0/routers/create-browser-router#optsfuture)
+
+[Example](./examples/lazy-pages/src/main.tsx)
+
+## Custom Router Factory
+
+You can provide a custom router factory function via `customCreateRouter` option.
+This is useful if you want to use a different router implementation or wrap the default `createBrowserRouter`.
+
+```ts
+import { createBrowserRouter } from 'react-router-dom'
+
+export const createRoot = ViteReactSSG(
+  {
+    routes,
+    customCreateRouter: (routes, options) => {
+      // Custom logic here
+      return createBrowserRouter(routes, options)
+    },
+  },
+)
+```
+
+eg. [sentry](https://docs.sentry.io/platforms/javascript/guides/react/features/react-router/v6/)
+
+```ts
+import * as Sentry from '@sentry/react'
+import { createBrowserRouter } from 'react-router-dom'
+
+export const createRoot = ViteReactSSG(
+  {
+    routes,
+    customCreateRouter: Sentry.wrapCreateBrowserRouterV6(createBrowserRouter),
+  },
+)
+```
+
+## CSS in JS
+
+Use the `getStyleCollector` option to specify an SSR/SSG style collector. Currently only supports `styled-components`.
+
+```tsx
+import { ViteReactSSG } from 'vite-react-ssg'
+import getStyledComponentsCollector from 'vite-react-ssg/style-collectors/styled-components'
+import { routes } from './App.js'
+import './index.css'
+
+export const createRoot = ViteReactSSG(
+  { routes },
+  () => { },
+  { getStyleCollector: getStyledComponentsCollector }
+)
+```
+
+You can provide your own by looking at the [implementation](./src/style-collectors/) of any of the existing collectors.
+
+## Critical CSS
+
+Vite React SSG has built-in support for generating [Critical CSS](https://web.dev/extract-critical-css/) inlined in the HTML via the [`beasties`](https://github.com/danielroe/beasties) package.
+Install it with:
+
+```bash
+npm i -D beasties
+```
+
+Critical CSS generation will automatically be enabled for you.
+
+To configure `beasties`, pass [its options](https://github.com/danielroe/beasties#usage)
+into `ssgOptions.beastiesOptions` in `vite.config.ts`:
+
+```ts
+// vite.config.ts
+export default defineConfig({
+  ssgOptions: {
+    beastiesOptions: {
+      // E.g., change the preload strategy
+      preload: 'media',
+      // Other options: https://github.com/danielroe/beasties#usage
+    },
+  },
+})
+```
+
+## Configuration
+
+You can pass options to Vite SSG in the `ssgOptions` field of your `vite.config.js`
 
 ```js
-const express = require('express')
-const bodyParser = require('body-parser')
-const { validate, ValidationError, Joi } = require('express-validation')
+// vite.config.js
 
-const loginValidation = {
-  body: Joi.object({
-    email: Joi.string()
-      .email()
-      .required(),
-    password: Joi.string()
-      .regex(/[a-zA-Z0-9]{3,30}/)
-      .required(),
-  }),
-}
-
-const app = express();
-app.use(bodyParser.json())
-
-app.post('/login', validate(loginValidation, {}, {}), (req, res) => {
-  res.json(200)
-})
-
-app.use(function(err, req, res, next) {
-  if (err instanceof ValidationError) {
-    return res.status(err.statusCode).json(err)
-  }
-
-  return res.status(500).json(err)
-})
-
-app.listen(3000)
-```
-We have defined two rules `email` and `password`.  They are encapsulated inside `body`; which is important; as this defines their location within the request.
-
-We also need to setup an express global error handler, `express-validation` will pass errors to this handler.  We can check within the handler for errors of type `validationError` distinguishing validation errors from other types of error.
-
-
-## Errors
-
-`express-validation`, by `default` will return errors in the following format, an object `details` keyed by `parameter`, each containing an array of errors in `joi` format.
-
-```json
-{
-      "name": "ValidationError",
-      "message": "Validation Failed",
-      "statusCode": 400,
-      "error": "Bad Request",
-      "details": {
-        "body": [
-          {
-            "message": "\"password\" is not allowed to be empty",
-            "path": [
-              "password"
-            ],
-            "type": "string.empty",
-            "context": {
-              "label": "password",
-              "value": "",
-              "key": "password"
-            }
-          }
-        ]
-      }
-    }
-```
-
-We support other simpler formats via configuration
-
-- `keyByField`, flattens the error details object to a list of messages, keyed by field name
-
-```json
-{
-  "name": "ValidationError",
-  "message": "Validation Failed",
-  "statusCode": 400,
-  "error": "Bad Request",
-  "details": [
-    { "accesstoken": "\"accesstoken\" is not allowed to be empty" },
-    { "password": "\"password\" is not allowed to be empty" }
-  ]
+export default {
+  plugins: [],
+  ssgOptions: {
+    script: 'async',
+  },
 }
 ```
 
-## API
+```ts
+interface ViteReactSSGOptions {
+  /**
+   * Set the scripts' loading mode. Only works for `type="module"`.
+   *
+   * @default 'sync'
+   */
+  script?: 'sync' | 'async' | 'defer' | 'async defer'
+  /**
+   * Build format.
+   *
+   * @default 'esm'
+   */
+  format?: 'esm' | 'cjs'
+  /**
+   * The path of the main entry file (relative to the project root).
+   *
+   * @default 'src/main.ts'
+   */
+  entry?: string
+  /**
+   * The path of the index.html file (relative to the project root).
+   * @default 'index.html'
+   */
+  htmlEntry?: string
+  /**
+   * Mock browser global variables (window, document, etc...) from SSG.
+   *
+   * @default false
+   */
+  mock?: boolean
+  /**
+   * Apply formatter to the generated index file.
+   *
+   * **It will cause Hydration Failed.**
+   *
+   * @default 'none'
+   */
+  formatting?: 'prettify' | 'none'
+  /**
+   * Vite environment mode.
+   */
+  mode?: string
+  /**
+   * Directory style of the output directory.
+   *
+   * flat: `/foo` -> `/foo.html`
+   * nested: `/foo` -> `/foo/index.html`
+   *
+   * @default 'flat'
+   */
+  dirStyle?: 'flat' | 'nested'
+  /**
+   * Generate for all routes, including dynamic routes.
+   * If enabled, you will need to configure your serve
+   * manually to handle dynamic routes properly.
+   *
+   * @default false
+   */
+  includeAllRoutes?: boolean
+  /**
+   * Options for the beasties packages.
+   *
+   * @see https://github.com/danielroe/beasties#usage
+   */
+  beastiesOptions?: BeastiesOptions | false
+  /**
+   * Custom function to modify the routes to do the SSG.
+   *
+   * Works only when `includeAllRoutes` is set to false.
+   *
+   * Defaults to a handler that filters out all the dynamic routes.
+   * When passing your custom handler, you should also take care of the dynamic routes yourself.
+   */
+  includedRoutes?: (paths: string[], routes: Readonly<RouteRecord[]>) => Promise<string[]> | string[]
+  /**
+   * Callback to be called before every page render.
+   *
+   * It can be used to transform the project's `index.html` file before passing it to the renderer.
+   *
+   * To do so, you can change the 'index.html' file contents (passed in through the `indexHTML` parameter), and return it.
+   * The returned value will then be passed to renderer.
+   */
+  onBeforePageRender?: (route: string, indexHTML: string, appCtx: ViteReactSSGContext<true>) => Promise<string | null | undefined> | string | null | undefined
+  /**
+   * Callback to be called on every rendered page.
+   *
+   * It can be used to transform the current route's rendered HTML.
+   *
+   * To do so, you can transform the route's rendered HTML (passed in through the `renderedHTML` parameter), and return it.
+   * The returned value will be used as the HTML of the route.
+   */
+  onPageRendered?: (route: string, renderedHTML: string, appCtx: ViteReactSSGContext<true>) => Promise<string | null | undefined> | string | null | undefined
 
-`express-validation` exposes the following api:
+  /**
+   * A function that is run after generation is complete.
+   * It receives the build output directory as a string.
+   *
+   * You can use this to add, edit, or delete files in the output
+   directory that you don't want to manage in React.
+   */
+  onFinished?: (dir: string) => Promise<void> | void
+  /**
+   * The application's root container `id`.
+   *
+   * @default `root`
+   */
+  rootContainerId?: string
+  /**
+   * The size of the SSG processing queue.
+   *
+   * @default 20
+   */
+  concurrency?: number
+}
+```
 
-### `validate(schema, [options], [joiOptions]) => [validationError]`
+See [src/types.ts](./src/types.ts). for more options available.
 
-The exported `validate` function takes a `schema` object and two optional arguments,
-`options` and `joiOptions` and
-returns a `validationError` instance if schema contains errors.
+### Custom Routes to Render
 
-#### `schema` (Object)
+You can use the `includedRoutes` hook to include or exclude route paths to render, or even provide some completely custom ones.
 
-Default: `{}`
+```js
+// vite.config.js
 
-Includes validition rules, defined using `joi`, the rules are keyed by the following `parameter` types:
-  - headers
-  - params (path)
-  - query
-  - cookies
-  - signedCookies
-  - body
+export default {
+  plugins: [],
+  ssgOptions: {
+    includedRoutes(paths, routes) {
+      // exclude all the route paths that contains 'foo'
+      return paths.filter(i => !i.includes('foo'))
+    },
+  },
+}
+```
 
+```js
+// vite.config.js
 
-#### `options` (Object)
+export default {
+  plugins: [],
+  ssgOptions: {
+    includedRoutes(paths, routes) {
+      // use original route records
+      return routes.flatMap(route => {
+        return route.name === 'Blog'
+          ? myBlogSlugs.map(slug => `/blog/${slug}`)
+          : route.path
+      })
+    },
+  },
+}
+```
 
-Default: `{ context: false, statusCode: 400, keyByField: false }`
+```ts
+export default defineConfig({
+  server: {
+    https: true,
+  },
+})
+```
 
-Options, used by `express-validation`:
-  - `context`, grants Joi access to the request object. This allows you to:
-      - reference other parts of the request in your validations, see [Joi.ref](https://hapi.dev/family/joi/api/?v=17.1.0#refkey-options) 
-      - specify default values, see [Joi.default](https://hapi.dev/module/joi/api/#anydefaultvalue)
-      - will also cast values, e.g. strings to integer
-    - default { context: false } 
-  - `statusCode`, defaults to `400`, this will also set the error message via nodes [status codes](https://nodejs.org/api/http.html#http_http_status_codes)
-    - default { statusCode: 400 }
-  - `keyByField`, flattens the error details object to a list of messages, keyed by field name
+### React17 Support
 
+- for react18, with flag `useLegacyRender: true`, it will use the legacy `render` and `hydrate` methods.
+- for react17, on top of above, you will need minor update to react and react-dom [example](https://github.com/jesse23/webpack-test-bed/blob/main/scripts/define-react-exports.js) to polyfill the mjs import and the `react-dom/client`.
 
-#### `joiOptions` (Object)
+## Roadmap
 
-Default: `{}`
+- [x] Support `react19`
+- [ ] no index.html mode
 
-Options, used by `joi`, see [Joi options](https://hapi.dev/family/joi/api/?v=17.1.0#anyvalidateasyncvalue-options), note:
+## Credits
 
-
-
-### `ValidationError`
-We expose a custom error; `ValidationError`, use this in you global express error handler to distinguish validation errors from other types of error.
-
-
-### `Joi`
-We also expose the version of Joi we have as a dependency, in order to avoid compatibility issues with other versions of Joi.
-
-
-
-## Examples
-
-For more information on how to use `express-validation` please see the following examples:
-
-#### abortEarly
-[`abortEarly.test.js`](/__tests__/integration/abortEarly.test.js)
-
-You can return multiple errors, not just the first encountered, by setting, the joi option `abortEarly: false`
-
-#### context
-[`context.test.js`](/__tests__/integration/context.test.js)
-
-Enabling the `context` in `options`, allows you to reference other parts of the request in your validation.
-
-#### defaults
-[`default.test.js`](/__tests__/integration/defaults.test.js)
-
-You can specify `joi` `default` values in your schema.
+This project inspired by [vite-ssg](https://github.com/antfu/vite-ssg), thanks to [@antfu](https://github.com/antfu) for his awesome work.
 
 ## License
 
-This work is licensed under the MIT License (see the LICENSE file).
-
-https://github.com/AndrewKeig/express-validation/blob/master/LICENSE
+[MIT](./LICENSE) License © 2023 [Riri](https://github.com/Daydreamer-riri)

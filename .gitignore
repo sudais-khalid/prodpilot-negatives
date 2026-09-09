@@ -1,6 +1,11 @@
+.cache
 .DS_Store
-npm-debug.log
+.idea
+*.log
+*.tgz
+coverage
+dist
+lib-cov
+logs
 node_modules
-.vscode
-coverage/**
-.clinic
+temp
