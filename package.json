@@ -6,9 +6,6 @@
   "main": "./lib/main.js",
   "types": "./main.d.ts",
   "type": "module",
-  "engines": {
-    "node": ">=20"
-  },
   "engineStrict": true,
   "scripts": {
     "test": "node --test"
