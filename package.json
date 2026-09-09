@@ -10,9 +10,6 @@
     "partials"
   ],
   "main": "index.js",
-  "engines": {
-    "node": ">=20"
-  },
   "directories": {
     "example": "example"
   },
