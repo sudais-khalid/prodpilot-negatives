@@ -4,7 +4,7 @@
   "license": "MIT",
   "main": "dist-electron/index.js",
   "author": {
-    "name": "Maximilian St\u00fcmpfl"
+    "name": "Maximilian Stümpfl"
   },
   "description": "Starter using Vite 2+ React +Typescript + Electron for fast prototyping.",
   "keywords": [
@@ -20,6 +20,7 @@
   "scripts": {
     "dev": "vite",
     "dev:electron": "npm run build:electron && electron .",
+    "build": "npm run build:vite && npm run build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
     "dist": "npm run build && electron-builder",
