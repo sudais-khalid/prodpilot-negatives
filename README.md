@@ -1,182 +1,121 @@
-# express-promise-router
+# Vite React Starter
 
-[![npm version](https://badge.fury.io/js/express-promise-router.svg)](https://badge.fury.io/js/express-promise-router)
+![Vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=for-the-badge)
+![Babel](https://img.shields.io/badge/Babel-F9DC3e?style=for-the-badge&logo=babel&logoColor=black)
+![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white&style=for-the-badge)
+![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white)
+![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white)
+![Prettier](https://img.shields.io/badge/-Prettier-F7B93E?logo=prettier&logoColor=white&style=for-the-badge)
+![Stylelint](https://img.shields.io/badge/-Stylelint-263238?logo=stylelint&logoColor=white&style=for-the-badge)
+![SASS](https://img.shields.io/badge/SASS-hotpink.svg?style=for-the-badge&logo=SASS&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Jest](https://img.shields.io/badge/-Jest-C21325?logo=jest&logoColor=white&style=for-the-badge)
+![Testing Library](https://img.shields.io/badge/-Testing%20Library-E33332?logo=testing%20library&logoColor=white&style=for-the-badge)
 
-A simple wrapper for Express 4's Router that allows middleware to return promises.
-This package makes it simpler to write route handlers for Express when dealing
-with promises by reducing duplicate code.
+> Opinionated Vite starter template.
+
+![screenshot](./src/assets/images/app_screenshot.gif)
+
+## Description
+
+An starter template for Vite React 18 projects including a bunch of useful tools and libraries enforcing best practices and autofix on save.
+
+For styling it comes with SASS, Emotion, and TailwindCSS ready to use. Choose your favorite CSS framework and get started. It also includes the @namics/stylelint-bem plugin for BEM style validation.
+
+## Built With
+
+- [Vite](https://vitejs.dev/) Next generation frontend tooling.
+- [Babel](https://babeljs.io/) The compiler for next generation JavaScript.
+- [React Router](https://reactrouter.com/) Declarative Routing for React.js
+- [ESLint](https://eslint.org/) Find and fix problems in your JavaScript code.
+- [Prettier](https://prettier.io/) Opinionated code formatter.
+- [Stylelint](https://stylelint.io/) A mighty, modern linter that helps you avoid errors and enforce conventions in your styles.
+- [@emotion/react](https://emotion.sh/) Emotion is a library designed for writing css styles with JavaScript.
+- [@emotion/styled](https://emotion.sh/) Styled is a way to create React components that have styles attached to them.
+- [Sass](https://sass-lang.com/) Syntactically Awesome Style Sheets.
+- [TailwindCSS](https://tailwindcss.com/) Rapidly build modern websites without ever leaving your HTML.
+- [Jest](https://jestjs.io/) Delightful JavaScript Testing.
+- [Testing Library](https://testing-library.com/) The React Testing Library is a very light-weight solution for testing React components
+
+### Other Plugins
+
+- [prop-types](https://www.npmjs.com/package/prop-types) Runtime type checking for React props and similar objects.
+- [react-error-boundary](https://www.npmjs.com/package/react-error-boundary) Simple reusable React error boundary component.
+- [eslint-config-airbnb](https://www.npmjs.com/package/eslint-config-airbnb) Airbnb's extensible shared config.
+- [eslint-plugin-import](https://www.npmjs.com/package/eslint-plugin-import) Linting support of ES2015+ (ES6+) import/export syntax.
+- [eslint-plugin-jsx-a11y](https://www.npmjs.com/package/eslint-plugin-jsx-a11y) Enforce accessibility best practices for React components.
+- [eslint-plugin-unused-imports](https://www.npmjs.com/package/eslint-plugin-unused-imports) Report and remove unused es6 modules.
+- [postcss](https://www.npmjs.com/package/postcss) PostCSS is a tool for transforming CSS with JavaScript plugins.
+- [stylelint-config-idiomatic-order](https://www.npmjs.com/package/stylelint-config-idiomatic-order) Order your styles based on idiomatic-css.
 
 ## Getting Started
 
-Install the module with npm
+To get a local copy up and running follow these simple example steps.
 
-```bash
-npm install express-promise-router --save
-```
+### Prerequisites
 
-or yarn.
+- Recommended `node` : `>=16.13.0`
+- `npm` or `pnpm` or `yarn`
 
-```bash
-yarn add express-promise-router
-```
+I advice to use `pnpm` for managing dependencies. It's faster and more reliable than `npm`. To install [pnpm](https://pnpm.io/) just run:
 
-`express-promise-router` is a drop-in replacement for Express 4's `Router`.
+- `corepack enable`
+- `corepack prepare pnpm@7.0.0-rc.3 --activate`
 
-## Documentation
+After that the syntax is the same as `npm` e.g. `npm install` becomes `pnpm install`.
 
-Middleware and route handlers can simply return a promise.
-If the promise is rejected, `express-promise-router` will call `next` with the
-reason. This functionality removes the need to explicitly define a rejection
-handler.
+### Setup
 
-```javascript
-// With Express 4's router
-var router = require("express").Router();
+1. Download or fork this project
+2. Extract the content to a new directory, rename it and cd the directory.
+3. Install all dependencies using:
 
-router.use("/url", function (req, res, next) {
-  Promise.reject().catch(next);
-});
+- `npm install` or `pnpm install` or `yarn`
 
-// With express-promise-router
-var router = require("express-promise-router")();
+## Scripts
 
-router.use("/url", function (req, res) {
-  return Promise.reject();
-});
-```
+### Start dev server
 
-Calling `next()` and `next("route")` is supported by resolving a promise with either `"next"` or `"route"`. No action is taken if the promise is resolved with any other value.
+- `npm run dev` or `pnpm run dev` or `yarn run dev` and open the browser at `http://localhost:3000`
 
-```javascript
-router.use("/url", function (req, res) {
-  // equivalent to calling next()
-  return Promise.resolve("next");
-});
+### Build for production
 
-router.use("/url", function (req, res) {
-  // equivalent to calling next('route')
-  return Promise.resolve("route");
-});
-```
+- `npm run build` or `pnpm run build` or `yarn run build`
 
-This package still allows calling `next` directly.
+### Locally preview production build
 
-```javascript
-router = require("express-promise-router")();
+After creating the production build, run:
 
-// still works as expected
-router.use("/url", function (req, res, next) {
-  next();
-});
-```
+- `npm run preview` or `yarn run preview`
 
-### ES6 Imports
+### Start server
 
-`express-promise-router` can be imported via ES6 imports. The `Router`
-constructor is the default export.
+- `npm run serve` or `pnpm run serve` or `yarn run serve` and open the browser at `http://localhost:4173`
 
-```javascript
-import Router from "express-promise-router";
-const router = Router();
-```
+## Connect With Me
 
-### Async / Await
+<!-- 👤 **Fabricio** -->
 
-Using `async` / `await` can dramatically improve code readability.
+| &nbsp;       | &nbsp;                                               |
+| ------------ | ---------------------------------------------------- |
+| **GitHub**   | [@fabri4c](https://github.com/fabri4c)           |
+| **Twitter**  | [@fabri_4c](https://twitter.com/fabri_4c)          |
+| **LinkedIn** | [@fabri4c](https://www.linkedin.com/in/fabri4c/) |
 
-```javascript
-router.get('/url', async function (req, res) {
-    const user = await User.fetch(req.user.id);
+## Show your support
 
-    if (user.permission !== "ADMIN") {
-      throw new Error("You must be an admin to view this page.");
-    }
+You can give a ⭐️ if you like this project!
 
-    res.send(`Hi ${user.name}!`);
-})
-```
+## Acknowledgments
 
-### Error handling
+The ideas and inspiration from this project are coming from the following:
 
-Just like with regular `express.Router` you can define custom error handlers.
+- [ESLint docs](https://eslint.org/docs/user-guide/configuring/)
+- [Prettier docs](https://prettier.io/docs/en/index.html)
+- [Stylelint docs](https://stylelint.io/user-guide/configure/)
+- [starter-vite-react](https://github.com/warugaki-web-developer/starter-vite-react)
+- [Vitamin](https://github.com/wtchnm/Vitamin)
 
-```javascript
-router.use((err, req, res, next) => {
-  res.status(403).send(err.message);
-});
-```
+## License
 
-### Frequently Asked Questions
-
-#### `Cannot read property '0' of undefined`
-
-This error may indicate that you call a method that needs a path, without one.
-Calling `router.get` (or `post`, `all` or any other verb) without a path is not
-valid. You should always specify a path like this:
-
-```javascript
-// DO:
-router.get("/", function (req, res) {
-  res.send("Test");
-});
-
-// DON'T:
-router.get(function (req, res) {
-  res.send("Test");
-});
-```
-
-For more information take a look at [this comment](https://github.com/express-promise-router/express-promise-router/issues/46#issuecomment-342002277).
-
-#### Can i use this on `app`?
-
-We currently don't support promisifying the `app` object. To use promises with
-the top-level router we recommend mounting a `Router` on the app object, like
-this:
-
-```javascript
-import express from "express";
-import Router from "express-promise-router";
-
-const app = express();
-const router = Router();
-app.use(router);
-
-router.get("/", function (req, res) {
-  res.send("Test");
-});
-```
-
-#### Why aren't promise values sent to the client
-
-We don't send values at the end of the promise chain to the client, because this
-could easily lead to the unintended leak of secrets or internal state. If you
-intend to send the result of your chain as JSON, please add an explicit
-`.then(data => res.send(data))` to the end of your chain or send it in the last
-promise handler.
-
-## Contributing
-
-Add unit tests for any new or changed functionality.
-Lint and test your code using `npm test`.
-
-Unit tests use [mocha](https://mochajs.org) and
-[chai](http://chaijs.com).
-
-We use [eslint](http://eslint.org), but styling is
-controlled mostly by
-[prettier](https://github.com/prettier/prettier/blob/master/README.md)
-which reformats your code before you commit. You can manually trigger a
-reformat using `npm run-script format`.
-
-## Release History
-
-See [CHANGELOG](https://github.com/express-promise-router/express-promise-router/blob/trunk/CHANGELOG.md)
-
-## Attribution
-
-Licensed under the [MIT license](LICENSE).
-
-Initial implementation by [Alex Whitney](https://github.com/alex-whitney) \
-Maintained by [Moritz Mahringer](https://github.com/mormahr) \
-Contributed to by [awesome people](https://github.com/express-promise-router/express-promise-router/graphs/contributors)
+No License. You can use this starter as you wish.

@@ -1,9 +1,0 @@
-.changeset
-.github
-test
-.eslintrc.json
-.gitignore
-.npmrc
-.prettierrc.yaml
-CHANGELOG.md
-yarn.lock
