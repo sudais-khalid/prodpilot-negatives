@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-ink: #17181a;
+  --color-muted: #8b8d91;
+  --color-shell: #efefee;
+  --color-sidebar: #f8f8f7;
+  --color-backdrop: #e4e4e2;
+  --color-accent: #e23e30;
+  --color-accent-soft: #fdecea;
+  --color-up: #16a34a;
+  --color-up-soft: #e7f6ec;
+  --color-leased: #3b82f6;
+  --color-owned: #ec4899;
+}
+
+body {
+  @apply bg-shell font-sans text-ink antialiased;
+}
