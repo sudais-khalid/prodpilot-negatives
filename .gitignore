@@ -1,14 +1,8 @@
-# Logs
-*.log
-npm-debug.log*
-
-# Runtime data
-*.pid
-.tmp
-.sass-cache
-uploads
-
-###############
+node_modules
 .DS_Store
-test_coverage
-private
+dist
+dist-ssr
+*.local
+dist
+yarn-error.log
+.media
