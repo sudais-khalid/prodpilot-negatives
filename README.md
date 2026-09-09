@@ -1,89 +1,356 @@
-MEAN Stack Relational ![Mean Stack Build Status](https://travis-ci.org/jpotts18/mean-stack-relational.png)
-=====================
+#Mers
+ *_Mongoose
+ *_Express
+ *_Rest
+ *_Service
+ 
+    Mers is a plugin for express to expose mongoose finders as simple crud/rest operations.  The
+    basic idea being you should just define your model/finders and the rest should be be magic.
 
-### Please use for reference only! No support or updates planned.
+![build status](https://travis-ci.org/jspears/mers.svg)
 
-The main idea for this repository is shamelessly stolen from [http://mean.io](http://mean.io). It says:
+## Usage
 
-> MEAN is a boilerplate that provides a nice starting point for [MySQL], Express, Node.js, and AngularJS based applications. It is designed to give you quick and organized way to start developing of MEAN based web apps with useful modules like sequelize and passport pre-bundled and configured. We mainly try to take care of the connection points between existing popular frameworks and solve common integration problems.
+Install mers, mongoose, express and body-parser
 
+```sh
+  $ npm install express --save
+  $ npm install mongoose --save
+  $ npm install body-parser --save
+  $ npm install mers --save
 
-The MongoDB ORM, [Mongoose](http://mongoosejs.com/), has been replaced with [Sequelize](http://sequelizejs.com/). Switching from mongoose to sequelize allows developers easy access to MySQL, MariaDB, SQLite or PostgreSQL databases by mapping database entries to objects and vice versa.
+```
 
-[Addy Osmani's Blog](http://addyosmani.com/blog/full-stack-javascript-with-mean-and-yeoman/) explains SQL databases, being strongly typed in nature are great at enforcing a level of consistency, ensuring many kinds of bad data simply don’t get recorded. By using SQL databases MEAN Stack Relational favors reliability over the performance gains of NoSQL databases.
+```javascript
+    //You really need body parser for things to work correctly
+     var express = require('express'),
+        mongoose = require('mongoose'),
+        Schema = mongoose.Schema,
+        bodyParser = require('body-parser')
 
-# Demo
+    app.use(bodyParser.json())
+    app.use(bodyParser.urlencoded({ extended: true }));
+    var SampleSchema = new Schema({
+        name:String,
+        age:Number
+    });
 
-Deploy to your Heroku account for a demo:
+    mongoose.model('sample', SampleSchema);
+    var mers = require('mers');
+    app.use('/rest', mers({uri:'mongodb://localhost/your_db'}).rest());
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+```
+Configuration options include:
+* `uri:uri://mongoose`  (as shown above)
+* `mongoose:{mongoose}` (your mongoose instance)
+* `error:{function}` (your custom Error Handler)
+* `responseStream:{function}` (your custom respost stream. See: lib/streams.js)
+* `transformer:{function}` (your custom transformer factory)
+# `inject:{Nojector}` (custom nojector add resovlers, or whatever)
 
-Note: Deploy from main repository view to avoid missing app.json error.
+###If you had a schema such as
+   ```javascript
+var mongoose = require('mongoose'), Schema = mongoose.Schema,
+    ObjectId = mongoose.Schema.ObjectId;
 
-# Getting Started
-
-Alright now the fun begins. First clone or download the repo to your computer. 
-
-1. Clone the repository ```git clone git@github.com:jpotts18/mean-stack-relational.git```.
-1. Go into the repository ```cd mean-stack-relational/```.
-1. Install dependencies with NPM ```npm install```. This will copy development.json5, and production.json5 from respective sample files in the config/env folder and run the grunt copy task to copy frontend lib files to their destination.
-1. Plug in your private and public keys for working with FB and Twitter into ```/config/env/development.json5``` and/or ```/config/env/production.json5```.
-1. Wire up the database connection found in ```/config/env/development.json5``` and/or ```/config/env/production.json5```.
-1. Run in production mode with: ```pm2 start pm2-ecosystem.json --env production``` (Run ```sudo npm install -g pm2``` if it's not installed.), or
-1. Run in development mode with grunt: ```grunt```
-1. Make something awesome!
-
-Thats all! Now go and open up your browser at [http://localhost:3000](http://localhost:3000), and tweet [@jpotts18](http://twitter.com/jpotts18) to say thanks!
-
-
-## Prerequisites
-- Node.js - Download and Install Node.js. You can also follow [this gist](https://gist.github.com/isaacs/579814) for a quick and easy way to install Node.js and npm
-- MySQL - Download and Install MySQL - Make sure it's running on the default port (3306).
-
-### Tool Prerequisites
-- NPM - Node.js package manager, should be installed when you install node.js. NPM (Node Package Manager) will look at the [package.json](https://github.com/jpotts18/mean-stack-relational/blob/master/package.json) file in the root of the project and download all of the necessary dependencies and put them in a folder called ```node_modules```
-
-- Bower - Web package manager, installing Bower is simple when you have npm:
-``` npm install -g bower ```
-
-### NPM Modules Used
-- [Passport](http://passportjs.org/) - Passport is authentication middleware for Node.js. Extremely flexible and modular, Passport can be unobtrusively dropped in to any Express-based web application. A comprehensive set of strategies support authentication using a username and password, Facebook, Twitter, and more. 
-- [Express](http://expressjs.com/) - Express is a minimal and flexible node.js web application framework, providing a robust set of features for building single and multi-page, and hybrid web applications.
-- [Sequelize](http://sequelizejs.com/) - The Sequelize library provides easy access to MySQL, MariaDB, SQLite or PostgreSQL databases by mapping database entries to objects and vice versa. To put it in a nutshell, it's an ORM (Object-Relational-Mapper). The library is written entirely in JavaScript and can be used in the Node.JS environment. 
-
-### Javascript Tools Used
-- [Grunt](http://gruntjs.com/) - In one word: automation. The less work you have to do when performing repetitive tasks like minification, compilation, unit testing, linting, etc, the easier your job becomes. After you've configured it, a Grunt can do most of that mundane work for you—and your team—with basically zero effort.
-
-  1. It [watches](https://github.com/jpotts18/mean-stack-relational/blob/master/gruntfile.js#L5) your filesystem and when it detects a change it will livereload your changes. 
-
-  2. It runs [jshint](https://github.com/jpotts18/mean-stack-relational/blob/master/gruntfile.js#L32) which looks through your javascript files and ensures coding standards.
-
-  3. It runs [nodemon](https://github.com/jpotts18/mean-stack-relational/blob/master/gruntfile.js#L35) which watches changes in specific folders and recompiles the app when necessary. No running ```node app.js``` every 2 minutes. 
-
-  4. It can also run tests like mocha and karma for you.
-
-- [Bower](http://bower.io/) - Bower is a package manager for the web. It offers a generic, unopinionated solution to the problem of front-end package management, while exposing the package dependency model via an API that can be consumed by a more opinionated build stack. There are no system wide dependencies, no dependencies are shared between different apps, and the dependency tree is flat.
-
-### Front-End Tools Used
-- [Angular.js](http://angularjs.org) - AngularJS is an open-source JavaScript framework, maintained by Google, that assists with running single-page applications. Its goal is to augment browser-based applications with model–view–controller (MVC) capability, in an effort to make both development and testing easier.
-- [Twitter Bootstrap](http://getbootstrap.com/) - Sleek, intuitive, and powerful mobile first front-end framework for faster and easier web development.
-- [UI Bootstrap](http://angular-ui.github.io/bootstrap/) - Bootstrap components written in pure AngularJS by the AngularUI Team
-
-# Project Roadmap
-
-Following is a list of items detailing future direction for MEAN Stack Relational:
-
-## Purpose
-- Demonstrate several login strategies using passport.js
-- Demonstrate environment configuration best practices
-- Demonstrate how to use Sequelize to query a single table and to accomplish a join.
-
-## Additions
-- Demonstrate testing for Express routes and javascript classes using Mocha, Sinon, Proxyquire and more
-- Demonstrating modularity by using javascript classes for complex backend functionality
-- Yeoman generator to compete with MEAN
+var CommentSchema = new Schema({
+    title:String, body:String, date:Date
+});
 
 
-# Troubleshooting and Contact
+var BlogPostSchema = new Schema({
+    author:ObjectId,
+    title:String,
+    body:String,
+    buf:Buffer,
+    date:Date,
+    comments:[CommentSchema],
+    meta:{
+        votes:Number, favs:Number
+    }
+});
+/**
+ * Note this must return a query object.   If it doesn't well, I dunno what it'll do.
+ * @param q
+ * @param term
+ */
+BlogPostSchema.statics.findTitleLike = function findTitleLike(q, term) {
+    return this.find({'title':new RegExp(q.title || term.shift() || '', 'i')});
+}
+var Comment = module.exports.Comment = mongoose.model('Comment', CommentSchema);
+var BlogPost = module.exports.BlogPost = mongoose.model('BlogPost', BlogPostSchema);
+```
 
-During install some of you may encounter some issues feel free to contact me (jpotts18) or the co-contributor (chaudhryjunaid), via the repository issue tracker or the links provided below. I am also available on twitter at [@jpotts18](http://twitter.com/jpotts18) and Junaid at [@chjunaidanwar](http://twitter.com/chjunaidanwar).
+you could then access it at
+    listing.
+    
+    http://localhost:3000/rest/blogpost/
+    http://localhost:3000/rest/blogpost/$id
+    http://localhost:3000/rest/blogpost/$id/comments
+    http://localhost:3000/rest/blogpost/$id/comments/$id
+    http://localhost:3000/rest/blogpost/$id/comments/0
+    http://localhost:3000/rest/blogpost/finder/findTitleLike/term
+    
+    
+###Pagination
+Pagination is also supported via skip= and limit= query params.
+
+    http://localhost:3000/rest/blogpost/$id?skip=10&limit=10
+
+###Population
+Mongoose populate is supported, but this will be changing shortly to allow for more
+fine grained controll over population.  Currently you can do
+
+    http://localhost:3000/rest/blogpost?populate=comments
+
+or to specify particular fields.
+
+    http://localhost:3000/rest/blogpost?skip=10&populate[comments]=title,date
+
+
+
+###Filter
+Filtering is available for strings. To find all the blog posts with C in the title.
+
+    http://localhost:3000/rest/blogpost?filter[title]=C
+
+Also you can and or nor the filters by using + (and) - (nor)  or nothing or
+    http://localhost:3000/rest/blogpost?filter[-title]=C
+    http://localhost:3000/rest/blogpost?filter[+title]=C&filter[-body]=A
+
+
+
+To filter all String fields that have a C in them
+
+    http://localhost:3000/rest/blogpost?filter=C
+
+
+###Sorting
+Sorting is supported 1 ascending -1 ascending.
+
+  http://localhost:3000/rest/blogpost?sort=title:1,date:-1
+
+###Transformer
+Transformers can be registered on startup.  A simple TransformerFactory is
+included.  If the function returns a promise, it will resolve the transformer
+asynchronously.   The transformers follow the same injection rules.
+
+To transform asynchronously just return a promise from your function.  You can
+chain transformers.  Transformers can also inject, but the first argument should
+be the object you want to transform.
+
+
+```javascript
+
+app.use('/rest', require('mers').rest({
+    mongoose:mongoose,
+    transformers:{
+           renameid: function(obj){
+                obj.id = obj._id;
+                delete obj._id;
+                //don't forget to return the object.  Null will filter it from the results.
+                return obj;
+           },
+           /**
+            Injects the user into the function, and checks if the
+            owner is the same as the current user.  Works with passport.
+           */
+           checkUser:function(obj, session$user){
+              if (obj.owner_id !== session$user._id){
+                //returning null, short circuits the other transformers. And will
+                //not be included in the response.
+                return null;
+              }else{
+               return obj;
+              }
+
+           },
+           /**
+             Uses injection and async resolution.
+           */
+           async:function(obj, query$doIt){
+             if (query$doIt){
+                var p = promise();
+                setTimeout(function(){
+                    obj.doneIt =true;
+                    //Mpromise resolve.  Should work with other promises, or any object with a then function.
+                    p.resolve(null, obj);
+                },50);
+                return p;
+             }else{
+             return obj;
+             }
+
+           }
+      }
+    }));
+}
+```
+
+
+
+to get results transformered just add
+
+     http://localhost:3000/rest/blogpost?transform=renameid
+
+
+
+It handles  get/put/post/delete I'll add some docs on that some day, but pretty much as you expect, or I expect anyways.
+see tests/routes-mocha.js for examples.
+
+###Static Finders
+It should also be able to be used with Class finders. Now handles class finders. Note: They must return  a query object.
+They are passed the query object and the rest of the url. All of the populate's, filters, transforms should work.
+
+```javascript
+
+/**
+ * Note this must return a query object.
+ * @param q
+ * @param term
+ */
+BlogPostSchema.statics.findTitleLike = function findTitleLike(q, term) {
+    return this.find({'title':new RegExp(q.title || term.shift(), 'i')});
+}
+```
+
+So you can get the url
+
+
+```
+http://localhost:3000/rest/blogpost/finder/findTitleLike?title=term
+```
+
+or
+
+```
+http://localhost:3000/rest/blogpost/finder/findTitleLike/term
+```
+
+#### Promises with finders
+Occassionally you may want to do something like a double query within a finder.   Mers has got your back.
+
+```javascript
+      BlogPostSchema.statics.findByCallback = function onFindByCallback(query$id) {
+          return this.find({_id: query$id}).exec();
+      }
+
+
+```
+
+
+### Error Handling ###
+To create a custom error handler
+
+```javascript
+
+   app.use('/rest', rest({
+         error : function(err, req, res, next){
+               res.send({
+                   status:1,
+                   error:err && err.message
+               });
+           }).rest());
+
+```
+
+
+### Custom ResultStream
+You can create your own result stream. It needs to subclass Stream and be writable.  This can allow
+for other formats, and preventing the wrapping of data in the payload.
+
+
+##Method
+You can invoke a method on a model.  This useful to expose more complicated things
+that can't just be filtered.   Of course you can return nested nestings too...
+
+
+###Returning an Object
+This one just returns an object, from /department/$id/hello/name
+
+```javascript
+DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
+    return {name:'hello '+this.name};
+}
+```
+
+###Returning a Promise.
+This is returns a promise from /department/$id/promises.  Really you just
+need to return an object with an then function.  So any promise library should work.
+
+```javascript
+DepartmentSchema.methods.promises = function (data){
+    var p = promise();
+    setTimeout(p.resolve.bind(p, null, {name:'hello '+this.name}), 100);
+    return p;
+}
+```
+
+### Returning a Query object.
+This is returns a query from /department/$id/superDo
+
+```javascript
+DepartmentSchema.methods.superDo = function DepartmentSchema$hello(data){
+   return Department.find({
+       _id:this._id
+   });
+}
+```
+
+##Examples.
+An example of a customized rest service can be found at
+
+    https://github.com/jspears/backbone-directory
+
+
+##Parameter injection
+When invoking a method you often need data from the request to process.  To do this
+we have an injection system.   You can inject a method on a model, or a transformer.
+
+It resolves the prefix of the parameter name deliminated by $ to the scope.  See
+ nojector for more information there. The built in resolvers are
+session,
+param,
+query,
+body,
+args,
+require
+
+```
+url: http://localhost/rest/department/finders/byName?name=Stuff
+```
+
+
+```javascript
+DepartmentSchema.static.byName = function DepartmentSchema$hello(query$name){
+   return Department.find({
+        name:query$name
+       });
+}
+```
+
+works on instances to...
+
+```
+url: http://localhost/rest/department/$id/hello/?name=STuff
+```
+
+
+```javascript
+DepartmentSchema.method.hello = function DepartmentSchema$hello(query$name, session$user){
+    //session.user === session$user
+   return Department.find({
+        name:query$name
+       });
+       
+}
+```
+
+
+### Delete
+Deleting is follows the rules of as a put, however, it has an option, of deleteRef, when you
+are deleteing a nested ref'd object and want to delete it from the refer'd collection. see
+routes-user-mocha.js
+
+
+
